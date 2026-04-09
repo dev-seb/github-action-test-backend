@@ -15,7 +15,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Auto-merge if CI passed
-        uses: pascalgn/automerge-action@v0.15.3
+        uses: pascalgn/automerge-action@v0.16.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
         with:
-          github_token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
           merge_method: squash
+          wait_for_mergeable: true
