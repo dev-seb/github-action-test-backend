@@ -8,16 +8,20 @@ on:
       - opened
       - synchronize
 
-jobs:
-  auto-merge:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+permissions:
+  contents: write
+  pull-requests: write
 
-      - name: Auto-merge if CI passed
-        uses: pascalgn/automerge-action@v0.16.4
+jobs:
+  enable-automerge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Automerge PR
+        run: gh pr merge --auto --merge "$PR_URL"
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
-        with:
-          merge_method: squash
-          wait_for_mergeable: true
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

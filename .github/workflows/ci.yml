@@ -3,7 +3,6 @@ name: Fake CI
 on:
   pull_request:
     branches:
-      - release
       - develop
       - main
 
