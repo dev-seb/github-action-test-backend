@@ -13,7 +13,7 @@ permissions:
 jobs:
   call-release-workflow:
     #uses: syrocolab/workflows/.github/workflows/release.yml@main
-    uses: ./.github/workflows/create-release.yml
+    uses: ./.github/workflows/release-jobs.yml
     with:
       target-branch: ${{ github.ref_name }}
     secrets:
