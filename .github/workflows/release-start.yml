@@ -2,15 +2,6 @@ name: Release start
 
 on:
   workflow_dispatch:
-    inputs:
-      source-branch:
-        description: Branch to create release from
-        required: true
-        default: develop
-      release-branch:
-        description: Release branch name
-        required: true
-        default: release
 
 permissions:
   contents: write
@@ -23,17 +14,17 @@ jobs:
       - name: Checkout source branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source-branch }}
+          ref: develop
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 
       - name: Recreate release branch from source branch
         run: |
+          RELEASE_BRANCH="release"
+          SOURCE_BRANCH="develop"
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          RELEASE_BRANCH="${{ inputs.release-branch }}"
-          SOURCE_BRANCH="${{ inputs.source-branch }}"
 
           # Delete remote branch if it already exists
           git push origin --delete "$RELEASE_BRANCH" || true
