@@ -1,0 +1,21 @@
+name: Fake CI
+
+on:
+  pull_request:
+    branches:
+      - release
+      - develop
+      - main
+
+jobs:
+  fake-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulate build/test
+        run: |
+          echo "Starting fake CI..."
+          sleep 30   # wait 30 seconds
+          echo "Fake CI passed!"
