@@ -1,0 +1,52 @@
+on:
+  workflow_call:
+    secrets:
+      token:
+        description: 'Token'
+        required: true
+    inputs:
+      target-branch:
+        description: 'Target branch'
+        required: true
+        type: string
+      release-type:
+        description: 'Release type'
+        required: false
+        # Default to node for Node.js projects, can be overridden for other types
+        type: string
+        default: node
+
+
+jobs:
+  release-create-pr:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == false && contains(github.event.head_commit.message, 'chore(release') == false))
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.token }}
+          release-type: ${{ inputs.release-type }}
+          target-branch: ${{ inputs.target-branch }}
+          skip-github-release: true
+
+
+  create-release:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true))
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.token }}
+          release-type: ${{ inputs.release-type }}
+          target-branch: ${{ inputs.target-branch }}
+          skip-github-pull-request: true
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: create pull request to main
+        if: ${{ steps.release.outputs.release_created }}
+        run: gh pr create -B main --title 'chore(release)':' ${{steps.release.outputs.tag_name}}' --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.token }}
