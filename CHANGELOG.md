@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.177.0](https://github.com/dev-seb/github-action-test-backend/compare/v1.176.0...v1.177.0) (2026-04-09)
+
+
+### Features
+
+* dummy feature ([#21](https://github.com/dev-seb/github-action-test-backend/issues/21)) ([93344eb](https://github.com/dev-seb/github-action-test-backend/commit/93344eb5fb3f519e346c41447e15f2931454bf5f))
+
 ## [1.176.0](https://github.com/dev-seb/github-action-test-backend/compare/v1.175.0...v1.176.0) (2026-04-09)
 
 
