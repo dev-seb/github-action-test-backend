@@ -1,0 +1,36 @@
+name: Release start
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recreate-release-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+
+      - name: Recreate release branch from source branch
+        run: |
+          RELEASE_BRANCH="release"
+          SOURCE_BRANCH="develop"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Delete remote branch if it already exists
+          git push origin --delete "$RELEASE_BRANCH" || true
+
+          # Recreate local branch from source branch
+          git checkout -B "$RELEASE_BRANCH" "origin/$SOURCE_BRANCH"
+
+          # Force-push the branch
+          git push --force --set-upstream origin "$RELEASE_BRANCH"
