@@ -25,6 +25,7 @@ jobs:
         with:
           ref: ${{ inputs.source-branch }}
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 
       - name: Recreate release branch from source branch
         run: |
