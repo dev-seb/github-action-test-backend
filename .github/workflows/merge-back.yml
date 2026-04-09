@@ -17,41 +17,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0
           token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 
-      - name: Check if back-merge PR already exists
-        id: check_pr
-        run: |
-          PR_COUNT=$(gh pr list \
-            --base develop \
-            --head main \
-            --state open \
-            --json number \
-            --jq 'length')
-
-          echo "count=$PR_COUNT" >> $GITHUB_OUTPUT
+      - name: Create PR from main to develop
+        id: pr_logic
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+        run: |
+          # 1. Check if a PR already exists from main -> develop
+          EXISTING_PR=$(gh pr list --base develop --head main --state open --json number --jq '.[0].number')
 
-      - name: Create PR
-        id: create-pr
-        if: steps.check_pr.outputs.count == '0'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
-          branch: back-merge/main-to-develop
-          base: develop
-          title: "chore(release): merge back "
-          body: "Merge back"
+          if [ -z "$EXISTING_PR" ]; then
+            echo "Creating new merge-back PR..."
+            NEW_PR_URL=$(gh pr create \
+              --base develop \
+              --head main \
+              --title "chore(release): merge back main to develop" \
+              --body "Automated merge-back from main to develop after a release.")
+            
+            # Extract number for the next step
+            echo "pr_number=$(echo $NEW_PR_URL | grep -oE '[0-9]+$')" >> $GITHUB_OUTPUT
+            echo "is_new=true" >> $GITHUB_OUTPUT
+          else
+            echo "PR #$EXISTING_PR already exists. Skipping automerge."
+            echo "is_new=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Enable auto-merge
-        if: steps.check_pr.outputs.count == '0' && steps.create-pr.outputs.pull-request-number != ''
+        # This only runs if is_new was set to true in the previous step
+        if: steps.pr_logic.outputs.is_new == 'true'
         run: |
-          gh pr merge ${{ steps.create-pr.outputs.pull-request-number }} --auto --merge
+          gh pr merge ${{ steps.pr_logic.outputs.pr_number }} --auto --merge
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
