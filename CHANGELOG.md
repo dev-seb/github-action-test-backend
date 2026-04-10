@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.178.2](https://github.com/dev-seb/github-action-test-backend/compare/v1.178.1...v1.178.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* dummy fix ([b52cab9](https://github.com/dev-seb/github-action-test-backend/commit/b52cab9976f3c0fd441b75245b2f4533454f3c12))
+
 ## [1.178.1](https://github.com/dev-seb/github-action-test-backend/compare/v1.178.0...v1.178.1) (2026-04-10)
 
 
