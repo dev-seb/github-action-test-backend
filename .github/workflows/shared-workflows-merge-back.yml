@@ -9,13 +9,11 @@ on:
     inputs:
       source-branch:
         description: "Source branch to merge back from"
-        required: false
-        default: "main"
+        required: true
         type: string
       target-branch:
         description: "Target branch to merge back into"
-        required: false
-        default: "develop"
+        required: true
         type: string
 
 jobs:
@@ -26,7 +24,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.token }}
@@ -76,6 +74,7 @@ jobs:
       - name: Enable auto-merge
         # This only runs if a new PR was created in the previous step
         if: ${{ steps.new-pr.outputs.pr_number != '' }}
+        continue-on-error: true
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
         env:

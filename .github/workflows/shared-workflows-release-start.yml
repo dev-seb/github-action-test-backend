@@ -1,0 +1,44 @@
+name: Shared workflows - Release start
+
+on:
+  workflow_call:
+    secrets:
+      token:
+        description: "Token"
+        required: true
+    inputs:
+      source-branch:
+        description: "Source branch to create release branch from"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  recreate-release-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source-branch }}
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+
+      - name: Create release branch
+        run: |
+          RELEASE_BRANCH="release"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Delete remote branch if it already exists
+          git push origin --delete "$RELEASE_BRANCH" || true
+
+          # Recreate local branch from source branch
+          git checkout -b "$RELEASE_BRANCH" "origin/${{ inputs.source-branch }}"
+
+          # Force-push the branch
+          git push --force --set-upstream origin "$RELEASE_BRANCH"
