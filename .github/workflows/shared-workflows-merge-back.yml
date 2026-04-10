@@ -74,4 +74,4 @@ jobs:
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.token }}
