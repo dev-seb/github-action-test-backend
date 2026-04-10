@@ -1,4 +1,5 @@
 name: Merge back
+run-name: Merge back main into develop
 
 on:
   pull_request:
@@ -7,14 +8,13 @@ on:
     types:
       - closed
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
-  call-release-workflow:
+  call-merge-back-workflow:
     #uses: syrocolab/workflows/.github/workflows/merge-back.yml@main
     uses: ./.github/workflows/shared-workflows-merge-back.yml
+    permissions:
+      contents: read
+      pull-requests: write
     with:
       source-branch: main
       target-branch: develop
