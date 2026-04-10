@@ -12,44 +12,11 @@ permissions:
   pull-requests: write
 
 jobs:
-  merge-back:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
-
-      - name: Create PR from main to develop
-        id: pr_logic
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
-        run: |
-          # 1. Check if a PR already exists from main -> develop
-          EXISTING_PR=$(gh pr list --base develop --head main --state open --json number --jq '.[0].number')
-
-          if [ -z "$EXISTING_PR" ]; then
-            echo "Creating new merge-back PR..."
-            NEW_PR_URL=$(gh pr create \
-              --base develop \
-              --head main \
-              --title "chore(release): merge back main to develop" \
-              --body "Automated merge-back from main to develop after a release.")
-            
-            # Extract number for the next step
-            echo "pr_number=$(echo $NEW_PR_URL | grep -oE '[0-9]+$')" >> $GITHUB_OUTPUT
-            echo "is_new=true" >> $GITHUB_OUTPUT
-          else
-            echo "PR #$EXISTING_PR already exists. Skipping automerge."
-            echo "is_new=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Enable auto-merge
-        # This only runs if is_new was set to true in the previous step
-        if: steps.pr_logic.outputs.is_new == 'true'
-        run: |
-          gh pr merge ${{ steps.pr_logic.outputs.pr_number }} --auto --merge
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+  call-release-workflow:
+    #uses: syrocolab/workflows/.github/workflows/merge-back.yml@main
+    uses: ./.github/workflows/shared-workflows-merge-back.yml
+    with:
+      source-branch: main
+      target-branch: develop
+    secrets:
+      token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
