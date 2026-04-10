@@ -35,7 +35,7 @@ jobs:
       # This step only runs if a Release was actually created (PR was merged)
       - name: Checkout
         if: ${{ steps.release.outputs.release_created }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Create PR to main
         if: ${{ steps.release.outputs.release_created }}

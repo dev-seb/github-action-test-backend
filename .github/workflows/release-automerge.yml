@@ -19,7 +19,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout5
 
       - name: Automerge release changelog PR
         run: gh pr merge --auto --merge "$PR_URL"
