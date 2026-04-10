@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.179.3](https://github.com/dev-seb/github-action-test-backend/compare/v1.179.2...v1.179.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* hotfix test ([e1a9dd1](https://github.com/dev-seb/github-action-test-backend/commit/e1a9dd10f3f57a2ff5545c712eec09dc2f45da76))
+
 ## [1.179.2](https://github.com/dev-seb/github-action-test-backend/compare/v1.179.1...v1.179.2) (2026-04-10)
 
 
