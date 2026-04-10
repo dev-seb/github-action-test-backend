@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 jobs:
-  recreate-release-branch:
+  release-start:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +25,7 @@ jobs:
         with:
           ref: ${{ inputs.source-branch }}
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+          token: ${{ secrets.token }}
 
       - name: Create release branch
         run: |
