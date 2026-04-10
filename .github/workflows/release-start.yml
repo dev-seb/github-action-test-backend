@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 
-      - name: Recreate release branch from source branch
+      - name: Create release branch
         run: |
           RELEASE_BRANCH="release"
           SOURCE_BRANCH="develop"
