@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.178.4](https://github.com/dev-seb/github-action-test-backend/compare/v1.178.3...v1.178.4) (2026-04-10)
+
+
+### Bug Fixes
+
+* checkout version ([073f274](https://github.com/dev-seb/github-action-test-backend/commit/073f274dad4f3393fdab192296f8153e8a745c8d))
+* checkout version ([d0f7011](https://github.com/dev-seb/github-action-test-backend/commit/d0f7011cd9e6502fce23063656347ab4bee4b7bc))
+* test ([f960f10](https://github.com/dev-seb/github-action-test-backend/commit/f960f100a650aa9d94d998f8f6afffc0bb1c3381))
+* test ([b6aaa1d](https://github.com/dev-seb/github-action-test-backend/commit/b6aaa1d6ba4ed743871987b895acc68696b5973b))
+* token ([0216cea](https://github.com/dev-seb/github-action-test-backend/commit/0216cea765bc0fea66a5d22806e5d797b66343bf))
+
 ## [1.178.3](https://github.com/dev-seb/github-action-test-backend/compare/v1.178.2...v1.178.3) (2026-04-10)
 
 
