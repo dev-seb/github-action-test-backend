@@ -1,5 +1,5 @@
 name: Release
-run-name: Handle release on ${{ github.ref_name }}
+run-name: ${{ startsWith(github.event.head_commit.message, 'chore(release') && 'Create release PR' || 'Prepare release changelog and version bump' }}
 
 on:
   push:
