@@ -19,11 +19,20 @@ on:
         default: node
 
 jobs:
-  release-please:
+  release-create-pr:
     runs-on: ubuntu-latest
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == false && contains(github.event.head_commit.message, 'chore(release') == false))
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.token }}
+          release-type: ${{ inputs.release-type }}
+          target-branch: ${{ inputs.target-branch }}
+          skip-github-release: true
+
+  create-release:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true))
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -31,13 +40,12 @@ jobs:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
+          skip-github-pull-request: true
 
-      # This step only runs if a Release was actually created (PR was merged)
       - name: Checkout
-        if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v5
 
-      - name: Create PR to main
+      - name: create pull request to main
         if: ${{ steps.release.outputs.release_created }}
         run: gh pr create -B main --title 'chore(release)':' ${{steps.release.outputs.tag_name}}' --body 'Created by Github action'
         env:

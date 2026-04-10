@@ -67,13 +67,13 @@ jobs:
             --title "chore: merge ${{ inputs.source-branch }} back into ${{ inputs.target-branch }}" \
             --body "Automated merge-back PR created after #${{ github.event.pull_request.number }} was merged into ${{ inputs.source-branch }}.")
 
-          echo "pr_number=$(echo $new_pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
+          echo "new_pr_number=$(echo $new_pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.token }}
 
       - name: Enable auto-merge
         # This only runs if a new PR was created in the previous step
-        if: ${{ steps.new-pr.outputs.pr_number != '' }}
+        if: ${{ steps.new-pr.outputs.new_pr_number != '' }}
         continue-on-error: true
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
