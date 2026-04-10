@@ -1,0 +1,79 @@
+name: Shared workflows - Merge back
+
+on:
+  workflow_call:
+    secrets:
+      token:
+        description: "Token"
+        required: true
+    inputs:
+      source-branch:
+        description: "Source branch to merge back from"
+        required: false
+        default: "main"
+        type: string
+      target-branch:
+        description: "Target branch to merge back into"
+        required: false
+        default: "develop"
+        type: string
+
+jobs:
+  create-merge-back-pr:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == inputs.source-branch }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check for changes to merge back
+        id: compare
+        run: |
+          ahead_by=$(gh api \
+            repos/${{ github.repository }}/compare/${{ inputs.target-branch }}...${{ inputs.source-branch }} \
+            --jq '.ahead_by')
+
+          echo "ahead_by=$ahead_by" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.token }}
+
+      - name: Check for existing merge-back pull request
+        id: existing-pr
+        if: ${{ steps.compare.outputs.ahead_by != '0' }}
+        run: |
+          pr_number=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --base "${{ inputs.target-branch }}" \
+            --head "${{ inputs.source-branch }}" \
+            --state open \
+            --json number \
+            --jq '.[0].number // ""')
+
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.token }}
+
+      - name: Create merge-back pull request
+        id: new-pr
+        if: ${{ steps.compare.outputs.ahead_by != '0' && steps.existing-pr.outputs.pr_number == '' }}
+        run: |
+          pr_number=$(gh pr create \
+            --repo "${{ github.repository }}" \
+            --base "${{ inputs.target-branch }}" \
+            --head "${{ inputs.source-branch }}" \
+            --title "chore: merge ${{ inputs.source-branch }} back into ${{ inputs.target-branch }}" \
+            --body "Automated merge-back PR created after #${{ github.event.pull_request.number }} was merged into ${{ inputs.source-branch }}." \
+            --json number \
+            --jq '.number')
+
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.token }}
+
+      - name: Enable auto-merge
+        # This only runs if a new PR was created in the previous step
+        if: ${{ steps.new-pr.outputs.pr_number != '' }}
+        run: |
+          gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}

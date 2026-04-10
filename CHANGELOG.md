@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.178.0](https://github.com/dev-seb/github-action-test-backend/compare/v1.177.0...v1.178.0) (2026-04-10)
+
+
+### Features
+
+* update workflows ([7d735ac](https://github.com/dev-seb/github-action-test-backend/commit/7d735accfc745abe101091cd6e4f4e46f37f71c1))
+
 ## [1.177.0](https://github.com/dev-seb/github-action-test-backend/compare/v1.176.0...v1.177.0) (2026-04-09)
 
 
