@@ -26,6 +26,11 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+
       - name: Check for changes to merge back
         id: compare
         run: |
@@ -74,4 +79,4 @@ jobs:
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
         env:
-          GH_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ secrets.token }}
