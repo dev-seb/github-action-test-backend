@@ -1,5 +1,5 @@
 name: Merge back
-run-name: Merge back main into develop
+run-name: Create merge back PR
 
 on:
   pull_request:
