@@ -1,4 +1,5 @@
 name: Shared workflows - Release start
+run-name: Start a new release from ${{ inputs.source-branch }} branch
 
 on:
   workflow_call:

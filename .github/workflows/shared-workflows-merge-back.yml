@@ -1,4 +1,5 @@
 name: Shared workflows - Merge back
+run-name: Merge back main into develop
 
 on:
   workflow_call:

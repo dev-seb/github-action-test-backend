@@ -1,5 +1,5 @@
 name: Release automerge
-run-name: Automerge release changelog PR
+run-name: Automerge release changelog and version bump PR
 
 on:
   pull_request:

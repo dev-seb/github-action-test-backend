@@ -1,5 +1,4 @@
 name: Release
-run-name: Handle release on ${{ github.ref_name }}
 
 on:
   push:

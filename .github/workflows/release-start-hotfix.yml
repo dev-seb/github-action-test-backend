@@ -1,0 +1,16 @@
+name: Release start (hotfix)
+run-name: Start a new release from main branch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-release-start-workflow:
+    #uses: syrocolab/workflows/.github/workflows/release-start.yml@main
+    uses: ./.github/workflows/shared-workflows-release-start.yml
+    permissions:
+      contents: write
+    with:
+      source-branch: main
+    secrets:
+      token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
