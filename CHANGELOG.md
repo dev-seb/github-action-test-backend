@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.2](https://github.com/dev-seb/github-action-test-backend/compare/1.180.1...v1.180.2) (2026-04-14)
+
+
+### Bug Fixes
+
+* update version ([40e241f](https://github.com/dev-seb/github-action-test-backend/commit/40e241f9e956205ec7a480a2e9c0b6cfd53bd64b))
+
 ## [1.180.0](https://github.com/dev-seb/github-action-test-backend/compare/1.174.0...v1.180.0) (2026-04-09)
 
 ### Features
