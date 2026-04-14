@@ -37,22 +37,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Debug config
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Files in repo root:"
-          ls -la
-          echo "Config content:"
-          cat release-please-config.json
-
       - uses: googleapis/release-please-action@v4
         id: release
         with:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
-          skip-github-release: true
+          skip-github-pull-request: true
 
       - name: create pull request to main
         if: ${{ steps.release.outputs.release_created }}
