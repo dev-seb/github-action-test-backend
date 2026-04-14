@@ -20,5 +20,6 @@ jobs:
     uses: ./.github/workflows/shared-workflows-release.yml
     with:
       target-branch: ${{ github.ref_name }}
+      release-type: node
     secrets:
       token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}

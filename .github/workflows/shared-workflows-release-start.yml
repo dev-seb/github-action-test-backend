@@ -28,8 +28,15 @@ jobs:
           token: ${{ secrets.token }}
 
       - name: Create release branch
+        env:
+          SOURCE_BRANCH: ${{ inputs.source-branch }}
         run: |
           RELEASE_BRANCH="release"
+
+          if ! git check-ref-format --branch "$SOURCE_BRANCH" >/dev/null 2>&1; then
+            echo "Invalid source branch: $SOURCE_BRANCH" >&2
+            exit 1
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -38,7 +45,7 @@ jobs:
           git push origin --delete "$RELEASE_BRANCH" || true
 
           # Recreate local branch from source branch
-          git checkout -b "$RELEASE_BRANCH" "origin/${{ inputs.source-branch }}"
+          git checkout -b "$RELEASE_BRANCH" "origin/$SOURCE_BRANCH"
 
           # Force-push the branch
           git push --force --set-upstream origin "$RELEASE_BRANCH"
