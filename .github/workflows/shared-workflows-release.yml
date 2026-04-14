@@ -26,9 +26,10 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.token }}
-          release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
           skip-github-release: true
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   create-release:
     runs-on: ubuntu-latest
@@ -41,9 +42,10 @@ jobs:
         id: release
         with:
           token: ${{ secrets.token }}
-          release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
           skip-github-pull-request: true
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
       - name: create pull request to main
         if: ${{ steps.release.outputs.release_created }}
