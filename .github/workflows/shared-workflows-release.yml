@@ -28,20 +28,24 @@ jobs:
           token: ${{ secrets.token }}
           target-branch: ${{ inputs.target-branch }}
           skip-github-release: true
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   create-release:
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true))
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
       - uses: googleapis/release-please-action@v4
         id: release
         with:
           token: ${{ secrets.token }}
           target-branch: ${{ inputs.target-branch }}
           skip-github-pull-request: true
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Checkout
+        uses: actions/checkout@v5
 
       - name: create pull request to main
         if: ${{ steps.release.outputs.release_created }}
