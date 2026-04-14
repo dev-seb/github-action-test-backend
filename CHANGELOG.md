@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.180.0](https://github.com/dev-seb/github-action-test-backend/compare/v1.179.4...v1.180.0) (2026-04-14)
+
+
+### Features
+
+* check branch ([be66de7](https://github.com/dev-seb/github-action-test-backend/commit/be66de71257c7f043e1dc45df6e55def5503c6bf))
+* test with yarn ([955a60f](https://github.com/dev-seb/github-action-test-backend/commit/955a60fb634c1283f54b612371bd65cb2a0e8519))
+* test with yarn ([de2cdde](https://github.com/dev-seb/github-action-test-backend/commit/de2cddea7a525819fc78cb39ff61ddd538e16447))
+
+
+### Bug Fixes
+
+* rename release please config ([0109bb1](https://github.com/dev-seb/github-action-test-backend/commit/0109bb1b4d13b9440e014af3a9379da9f86ca313))
+* use expected config ([#66](https://github.com/dev-seb/github-action-test-backend/issues/66)) ([2dc7dd3](https://github.com/dev-seb/github-action-test-backend/commit/2dc7dd3b9aa3b415c9dfad1fa39379801d49d50b))
+
 ## [1.179.4](https://github.com/dev-seb/github-action-test-backend/compare/v1.179.3...v1.179.4) (2026-04-10)
 
 
