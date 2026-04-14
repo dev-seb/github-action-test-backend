@@ -28,8 +28,6 @@ jobs:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
-          config-file: release-please-config.json
-          manifest:
           include-component-in-tag: false
           skip-github-release: true
 
@@ -37,6 +35,18 @@ jobs:
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true))
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Debug config
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in repo root:"
+          ls -la
+          echo "Config content:"
+          cat release-please-config.json
+
       - uses: googleapis/release-please-action@v4
         id: release
         with:
@@ -45,9 +55,6 @@ jobs:
           target-branch: ${{ inputs.target-branch }}
           include-component-in-tag: false
           skip-github-release: true
-
-      - name: Checkout
-        uses: actions/checkout@v5
 
       - name: create pull request to main
         if: ${{ steps.release.outputs.release_created }}
