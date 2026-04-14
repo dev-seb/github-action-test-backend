@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.3](https://github.com/dev-seb/github-action-test-backend/compare/1.180.2...1.180.3) (2026-04-14)
+
+
+### Bug Fixes
+
+* remove config/manifest files ([5939376](https://github.com/dev-seb/github-action-test-backend/commit/59393760b6bb973b8b9ff665f4ed32bd41f89e70))
+
 ## [1.180.2](https://github.com/dev-seb/github-action-test-backend/compare/1.180.1...1.180.2) (2026-04-14)
 
 
