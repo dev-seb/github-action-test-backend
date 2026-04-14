@@ -28,7 +28,6 @@ jobs:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
-          include-component-in-tag: false
           skip-github-release: true
 
   create-release:
@@ -53,7 +52,6 @@ jobs:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
-          include-component-in-tag: false
           skip-github-release: true
 
       - name: create pull request to main
