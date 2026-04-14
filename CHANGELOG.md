@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.4](https://github.com/dev-seb/github-action-test-backend/compare/1.180.3...1.180.4) (2026-04-14)
+
+
+### Bug Fixes
+
+* move checkout ([662e48c](https://github.com/dev-seb/github-action-test-backend/commit/662e48c5cb6ef853222f9dbb062fe75bc5ef28bf))
+
 ## [1.180.3](https://github.com/dev-seb/github-action-test-backend/compare/1.180.2...1.180.3) (2026-04-14)
 
 
