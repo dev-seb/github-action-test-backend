@@ -17,10 +17,6 @@ on:
         # Default to node for Node.js projects, can be overridden for other types
         type: string
         default: node
-      use-v-prefix:
-        description: "Include leading v in tag"
-        type: boolean
-        default: true
 
 jobs:
   release-create-pr:
@@ -32,7 +28,8 @@ jobs:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
-          include-v-in-tag: ${{ inputs.use-v-prefix }}
+          config-file: release-please-config.json
+          manifest:
           include-component-in-tag: false
           skip-github-release: true
 
@@ -46,7 +43,6 @@ jobs:
           token: ${{ secrets.token }}
           release-type: ${{ inputs.release-type }}
           target-branch: ${{ inputs.target-branch }}
-          include-v-in-tag: ${{ inputs.use-v-prefix }}
           include-component-in-tag: false
           skip-github-release: true
 

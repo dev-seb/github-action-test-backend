@@ -21,6 +21,5 @@ jobs:
     with:
       target-branch: ${{ github.ref_name }}
       release-type: node
-      use-v-prefix: false
     secrets:
       token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
