@@ -8,6 +8,14 @@ permissions:
   contents: read
 
 jobs:
+  debug-target:
+    runs-on: ubuntu-latest
+    steps:
+      - name: View Target Commitish
+        run: |
+          echo "The target_commitish is: '${{ github.event.release.target_commitish }}'"
+          echo "The tag_name is: '${{ github.event.release.tag_name }}'"
+
   build-docker-image:
     name: Build and publish Docker image
     if: github.event.release.target_commitish == 'main' || github.event.release.target_commitish == 'release'
