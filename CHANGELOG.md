@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.10](https://github.com/dev-seb/github-action-test-backend/compare/1.180.9...1.180.10) (2026-04-15)
+
+
+### Bug Fixes
+
+* add token ([8d7ee92](https://github.com/dev-seb/github-action-test-backend/commit/8d7ee9249f4e4583871bd6ca4db6813e82cea0d1))
+
 ## [1.180.9](https://github.com/dev-seb/github-action-test-backend/compare/1.180.8...1.180.9) (2026-04-15)
 
 
