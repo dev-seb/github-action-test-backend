@@ -11,12 +11,6 @@ on:
         description: "Target branch"
         required: true
         type: string
-      release-type:
-        description: "Release type"
-        required: false
-        # Default to node for Node.js projects, can be overridden for other types
-        type: string
-        default: node
 
 jobs:
   release-create-pr:

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.180.5](https://github.com/dev-seb/github-action-test-backend/compare/1.180.4...1.180.5) (2026-04-15)
+
+
+### Bug Fixes
+
+* disable v in release name ([6227663](https://github.com/dev-seb/github-action-test-backend/commit/62276638af70ff59fd58c2b470d354842d3b98ce))
+* remove release-type parameter ([1745420](https://github.com/dev-seb/github-action-test-backend/commit/1745420f4ca048c5ab7c9d08885a6816adfceabf))
+
 ## [1.180.4](https://github.com/dev-seb/github-action-test-backend/compare/1.180.3...1.180.4) (2026-04-14)
 
 
