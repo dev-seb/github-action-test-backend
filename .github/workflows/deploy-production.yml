@@ -1,0 +1,73 @@
+name: Deploy Production
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  build-docker-image:
+    name: Build and publish Docker image
+    if: github.event.release.target_commitish == 'main'
+    runs-on: ubuntu-latest
+    concurrency: production_environment
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set IMAGE_TAG env variable
+        run: echo "IMAGE_TAG=$(git describe --tags)" >> $GITHUB_ENV
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        run: |
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+    outputs:
+      docker-image-tag: "${{ steps.build-image.outputs.image_tag }}"
+
+  create-infra-pr:
+    name: Create infra release PR
+    needs: build-docker-image
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.build-docker-image.outputs.docker-image-tag }}
+
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+        with:
+          repository: dev-seb/github-action-test-infra
+          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+          path: infra
+
+      - name: Update nodejs-api version
+        run: |
+          cd infra
+          sed -i "s|\(application_repository_url.*:\)[^\"]*|\1$VERSION|g" ./live/demo-syroco/nodejs-api/terragrunt.hcl
+          sed -i "s|\(application_repository_url.*:\)[^\"]*|\1$VERSION|g" ./live/production-cma/nodejs-api/terragrunt.hcl
+          sed -i "s|\(application_repository_url.*:\)[^\"]*|\1$VERSION|g" ./live/production-syroco/nodejs-api/terragrunt.hcl
+
+      - name: Commit changes and open PR
+        run: |
+          BRANCH_NAME="feature/deploy-nodejs-api-${VERSION}"
+
+          cd infra
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout develop
+          git checkout -b $BRANCH_NAME
+          git add .
+          git commit -am "chore(deploy): nodejs API $VERSION"
+          git push origin $BRANCH_NAME
+
+          gh pr create \
+            --title "chore(deploy): nodejs API $VERSION" \
+            --body "Created by Github action" \
+            --base develop \
+            --head $BRANCH_NAME
