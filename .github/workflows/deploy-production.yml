@@ -63,6 +63,8 @@ jobs:
           sed -i "s|\(application_repository_url.*:\)[^\"]*|\1$VERSION|g" ./live/production-syroco/nodejs-api/terragrunt.hcl
 
       - name: Commit changes and open PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
         run: |
           BRANCH_NAME="feature/deploy-nodejs-api-${VERSION}"
 
