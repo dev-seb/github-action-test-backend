@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.9](https://github.com/dev-seb/github-action-test-backend/compare/1.180.8...1.180.9) (2026-04-15)
+
+
+### Bug Fixes
+
+* if condition ([c0b9376](https://github.com/dev-seb/github-action-test-backend/commit/c0b9376cccec70af97ef32ff4926d718332d5c2f))
+
 ## [1.180.8](https://github.com/dev-seb/github-action-test-backend/compare/1.180.7...1.180.8) (2026-04-15)
 
 
