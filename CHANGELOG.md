@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.7](https://github.com/dev-seb/github-action-test-backend/compare/1.180.6...1.180.7) (2026-04-15)
+
+
+### Bug Fixes
+
+* release target ([ca2c49f](https://github.com/dev-seb/github-action-test-backend/commit/ca2c49f83711587f4f051f46ed1102a27e3f1f85))
+
 ## [1.180.6](https://github.com/dev-seb/github-action-test-backend/compare/1.180.5...1.180.6) (2026-04-15)
 
 
