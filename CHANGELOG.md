@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.6](https://github.com/dev-seb/github-action-test-backend/compare/1.180.5...1.180.6) (2026-04-15)
+
+
+### Bug Fixes
+
+* infra ([b93aa63](https://github.com/dev-seb/github-action-test-backend/commit/b93aa632624937b6dbcafa928b6ca4c29e2331a2))
+
 ## [1.180.5](https://github.com/dev-seb/github-action-test-backend/compare/1.180.4...1.180.5) (2026-04-15)
 
 
