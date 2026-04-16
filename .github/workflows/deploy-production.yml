@@ -91,6 +91,7 @@ jobs:
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@v1.24.0
+        continue-on-error: true
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           PR_URL: ${{ steps.new-pr.outputs.new_pr_url }}
