@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.180.12](https://github.com/dev-seb/github-action-test-backend/compare/1.180.11...1.180.12) (2026-04-16)
+
+
+### Bug Fixes
+
+* slack test ([7b81d46](https://github.com/dev-seb/github-action-test-backend/commit/7b81d46028ac78f7bee488ffc903e5bab18654bb))
+
 ## [1.180.11](https://github.com/dev-seb/github-action-test-backend/compare/1.180.10...1.180.11) (2026-04-16)
 
 
