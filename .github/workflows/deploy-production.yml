@@ -46,12 +46,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.build-docker-image.outputs.docker-image-tag }}
+      INFRA_REPO: dev-seb/github-action-test-infra
 
     steps:
       - name: Checkout infra repo
         uses: actions/checkout@v4
         with:
-          repository: dev-seb/github-action-test-infra
+          repository: ${{ env.INFRA_REPO }}
           token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
           path: infra
 
@@ -63,6 +64,7 @@ jobs:
           sed -i "s|\(application_repository_url.*:\)[^\"]*|\1$VERSION|g" ./live/production-syroco/nodejs-api/terragrunt.hcl
 
       - name: Commit changes and open PR
+        id: new-pr
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
         run: |
@@ -79,8 +81,44 @@ jobs:
           git commit -am "chore(deploy): nodejs API $VERSION"
           git push origin $BRANCH_NAME
 
-          gh pr create \
+          new_pr_url=$(gh pr create \
             --title "chore(deploy): nodejs API $VERSION" \
             --body "Created by Github action" \
             --base develop \
-            --head $BRANCH_NAME
+            --head $BRANCH_NAME)
+
+          echo "new_pr_url=$new_pr_url" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1.24.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PR_URL: ${{ steps.new-pr.outputs.new_pr_url }}
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "NodeJS API ${{ env.VERSION }} (infra)"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Infra PR is ready:\n<${{ env.PR_URL }}|chore(deploy): nodejs API ${{ env.VERSION }}>"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Review PR"
+                    },
+                    "url": "${{ env.PR_URL }}"
+                  }
+                }
+              ]
+            }
