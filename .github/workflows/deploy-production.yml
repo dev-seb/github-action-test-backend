@@ -90,7 +90,7 @@ jobs:
           echo "new_pr_url=$new_pr_url" >> $GITHUB_OUTPUT
 
       - name: Notify Slack
-        uses: slackapi/slack-github-action@v1.24.0
+        uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
