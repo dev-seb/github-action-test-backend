@@ -58,14 +58,6 @@ jobs:
                     "type": "mrkdwn",
                     "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): nodejs API ${{ env.VERSION }}>"
                   },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Review PR"
-                    },
-                    "url": "${{ env.PR_URL }}"
-                  }
                 }
               ]
             }

@@ -101,26 +101,11 @@ jobs:
             {
               "blocks": [
                 {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "NodeJS API ${{ env.VERSION }} (infra)"
-                  }
-                },
-                {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
                     "text": "Infra PR is ready:\n<${{ env.PR_URL }}|chore(deploy): nodejs API ${{ env.VERSION }}>"
                   },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Review PR"
-                    },
-                    "url": "${{ env.PR_URL }}"
-                  }
                 }
               ]
             }
