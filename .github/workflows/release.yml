@@ -37,10 +37,11 @@ jobs:
         uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           PR_URL: ${{ needs.call-release-workflow.outputs.pr_url }}
           VERSION: ${{ needs.call-release-workflow.outputs.tag_name }}
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "blocks": [
