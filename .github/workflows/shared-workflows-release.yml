@@ -45,15 +45,22 @@ jobs:
       - name: Extract Release Metadata
         id: extract
         shell: bash
+        env:
+          # Pass outputs as env vars to avoid shell syntax errors
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          PR_JSON: ${{ steps.release.outputs.pr }}
+          REL_TAG: ${{ steps.release.outputs.tag_name }}
+          REL_URL: ${{ steps.release.outputs.html_url }}
         run: |
-          # 1. Determine the URL (Prioritize Release URL, fallback to PR URL)
-          if [[ "${{ steps.release.outputs.release_created }}" == "true" ]]; then
-            echo "url=${{ steps.release.outputs.html_url }}" >> $GITHUB_OUTPUT
-            echo "tag=${{ steps.release.outputs.tag_name }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ steps.release.outputs.pr }}" != "" ]]; then
-            PR_URL=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.html_url')
-            PR_TITLE=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.title')
-            # Extract 'v1.2.3' from 'chore(main): release v1.2.3'
+          if [[ "$RELEASE_CREATED" == "true" ]]; then
+            echo "url=$REL_URL" >> $GITHUB_OUTPUT
+            echo "tag=$REL_TAG" >> $GITHUB_OUTPUT
+          elif [[ -n "$PR_JSON" && "$PR_JSON" != "{}" ]]; then
+            # Use jq to safely parse the env var
+            PR_URL=$(echo "$PR_JSON" | jq -r '.html_url // ""')
+            PR_TITLE=$(echo "$PR_JSON" | jq -r '.title // ""')
+            
+            # Extract version from title (e.g., "1.181.3")
             PROPOSED_TAG=$(echo "$PR_TITLE" | sed 's/.*release //')
             
             echo "url=$PR_URL" >> $GITHUB_OUTPUT
