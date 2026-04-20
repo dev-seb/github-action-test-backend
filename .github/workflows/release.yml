@@ -1,4 +1,9 @@
 name: Release
+run-name: |
+  ${{ (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true)) 
+    && 'Create release PR' 
+    || 'Prepare release changelog and version bump' 
+  }}
 
 on:
   push:
