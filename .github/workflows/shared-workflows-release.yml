@@ -18,15 +18,12 @@ on:
       body:
         description: "Created PR body with changelog"
         value: ${{ jobs.release-please.outputs.body }}
-      tag_name:
+      tag:
         description: "Created tag name"
-        value: ${{ jobs.release-please.outputs.tag_name }}
-      html_url:
+        value: ${{ jobs.release-please.outputs.tag }}
+      url:
         description: "Created PR URL"
-        value: ${{ jobs.release-please.outputs.html_url }}
-      pr_json:
-        description: "The full JSON string of the Release PR"
-        value: ${{ jobs.release-please.outputs.pr_json }}
+        value: ${{ jobs.release-please.outputs.url }}
 
 jobs:
   release-please:
@@ -34,9 +31,8 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       body: ${{ steps.release.outputs.body }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      html_url: ${{ steps.release.outputs.html_url }}
-      pr_json: ${{ steps.release.outputs.pr || '{}' }}
+      tag: ${{ steps.extract.outputs.tag }}
+      url: ${{ steps.extract.outputs.url }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -45,3 +41,21 @@ jobs:
           target-branch: ${{ inputs.target-branch }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Extract Release Metadata
+        id: extract
+        shell: bash
+        run: |
+          # 1. Determine the URL (Prioritize Release URL, fallback to PR URL)
+          if [[ "${{ steps.release.outputs.release_created }}" == "true" ]]; then
+            echo "url=${{ steps.release.outputs.html_url }}" >> $GITHUB_OUTPUT
+            echo "tag=${{ steps.release.outputs.tag_name }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.release.outputs.pr }}" != "" ]]; then
+            PR_URL=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.html_url')
+            PR_TITLE=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.title')
+            # Extract 'v1.2.3' from 'chore(main): release v1.2.3'
+            PROPOSED_TAG=$(echo "$PR_TITLE" | sed 's/.*release //')
+            
+            echo "url=$PR_URL" >> $GITHUB_OUTPUT
+            echo "tag=$PROPOSED_TAG" >> $GITHUB_OUTPUT
+          fi
