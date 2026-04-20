@@ -12,50 +12,31 @@ on:
         required: true
         type: string
     outputs:
+      release_created:
+        description: "Whether a release PR was created"
+        value: ${{ jobs.release-please.outputs.release_created }}
+      body:
+        description: "Created PR body"
+        value: ${{ jobs.release-please.outputs.body }}
       tag_name:
         description: "Created tag name"
-        value: ${{ jobs.create-release.outputs.tag_name }}
-      pr_url:
+        value: ${{ jobs.release-please.outputs.tag_name }}
+      html_url:
         description: "Created PR URL"
-        value: ${{ jobs.create-release.outputs.pr_url }}
+        value: ${{ jobs.release-please.outputs.html_url }}
 
 jobs:
-  release-create-pr:
-    runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == false && contains(github.event.head_commit.message, 'chore(release') == false))
-    steps:
-      - uses: googleapis/release-please-action@v4
-        with:
-          token: ${{ secrets.token }}
-          target-branch: ${{ inputs.target-branch }}
-          skip-github-release: true
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-
-  create-release:
+  release-please:
     runs-on: ubuntu-latest
     outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      body: ${{ steps.release.outputs.body }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-      pr_url: ${{ steps.new-pr.outputs.pr_url }}
-    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true))
+      html_url: ${{ steps.release.outputs.html_url }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.token }}
-          target-branch: ${{ inputs.target-branch }}
-          skip-github-pull-request: true
+          primary-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: create pull request to main
-        id: new-pr
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          pr_url=$(gh pr create -B main --title "chore(release): ${{steps.release.outputs.tag_name}}" --body "Created by Github action")
-          echo "pr_url=$pr_url" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.token }}

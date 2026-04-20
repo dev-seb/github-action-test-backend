@@ -1,14 +1,9 @@
 name: Release
-run-name: |
-  ${{ (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true)) 
-    && 'Create release PR' 
-    || 'Prepare release changelog and version bump' 
-  }}
 
 on:
   push:
     branches:
-      - release
+      - main
 
 permissions:
   contents: write
@@ -23,21 +18,30 @@ jobs:
     secrets:
       token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 
-  use-output:
+  call-merge-back-workflow:
+    needs: call-release-workflow
+    if: needs.call-release-workflow.outputs.release_created == 'true'
+    #uses: syrocolab/workflows/.github/workflows/merge-back.yml@main
+    uses: ./.github/workflows/shared-workflows-merge-back.yml
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      source-branch: main
+      target-branch: develop
+    secrets:
+      token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+
+  slack-notification-pr:
     runs-on: ubuntu-latest
     needs: call-release-workflow
-    if: needs.call-release-workflow.outputs.pr_url && needs.call-release-workflow.outputs.tag_name
+    if: needs.call-release-workflow.outputs.release_created == 'false'
     steps:
-      - name: Use the outputs
-        run: |
-          echo "PR URL: ${{ needs.call-release-workflow.outputs.pr_url }}"
-          echo "Tag Name: ${{ needs.call-release-workflow.outputs.tag_name }}"
-
       - name: Notify Slack
         uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
-          PR_URL: ${{ needs.call-release-workflow.outputs.pr_url }}
+          PR_URL: ${{ needs.call-release-workflow.outputs.html_url }}
           VERSION: ${{ needs.call-release-workflow.outputs.tag_name }}
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -58,14 +62,34 @@ jobs:
                     "type": "mrkdwn",
                     "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): nodejs API ${{ env.VERSION }}>"
                   },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Review PR"
-                    },
-                    "url": "${{ env.PR_URL }}"
-                  }
-                }
+                },
+              ]
+            }
+
+  slack-notification-release:
+    runs-on: ubuntu-latest
+    needs: call-release-workflow
+    if: needs.call-release-workflow.outputs.release_created == 'true'
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v3
+        continue-on-error: true
+        env:
+          PR_URL: ${{ needs.call-release-workflow.outputs.html_url }}
+          VERSION: ${{ needs.call-release-workflow.outputs.tag_name }}
+          CHANGELOG: ${{ needs.call-release-workflow.outputs.body }}
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG }}"
+                  },
+                },
               ]
             }
