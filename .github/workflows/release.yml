@@ -1,8 +1,9 @@
 name: Release
-run-name: |
-  ${{ (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request ') == true || contains(github.event.head_commit.message, 'chore(release') == true)) 
-    && 'Create release PR' 
-    || 'Prepare release changelog and version bump' 
+run-name: >-
+  ${{ 
+    contains(github.event.head_commit.message, 'chore(main): release') 
+    && 'Create tag and release' 
+    || 'Create changelog and version bump PR' 
   }}
 
 on:
@@ -40,7 +41,7 @@ jobs:
   slack-notification-pr:
     runs-on: ubuntu-latest
     needs: call-release-workflow
-    if: needs.call-release-workflow.outputs.release_created == 'false'
+    if: needs.call-release-workflow.outputs.release_created != 'true'
     steps:
       - name: Notify Slack
         uses: slackapi/slack-github-action@v3
@@ -76,13 +77,35 @@ jobs:
     needs: call-release-workflow
     if: needs.call-release-workflow.outputs.release_created == 'true'
     steps:
+      - name: Format Release Body for Slack
+        id: slack_format
+        run: |
+          CHANGELOG="${{ steps.release.outputs.body }}"
+
+          # Convert Headers (###) to Bold
+          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/^###+ (.*)/*\1*/g')
+
+          # Convert GFM Bold (**text**) to Slack Bold (*text*)
+          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/\*\*([^*]+)\*\//*\1*/g')
+
+          # Convert leading "*" bullets to "-"
+          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/^\* / - /g')
+
+          # Remove commit links: " ([hash](url))" 
+          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
+
+          # Escape specific characters for JSON (optional but safer)
+          CHANGELOG=$(echo "$CHANGELOG" | jq -aRs .)
+
+          echo "formatted_body=$CHANGELOG" >> $GITHUB_OUTPUT
+
       - name: Notify Slack
         uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
           PR_URL: ${{ needs.call-release-workflow.outputs.html_url }}
           VERSION: ${{ needs.call-release-workflow.outputs.tag_name }}
-          CHANGELOG: ${{ needs.call-release-workflow.outputs.body }}
+          CHANGELOG: ${{ steps.slack_format.outputs.changelog }}
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -93,7 +116,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG }}"
+                    "text": ":package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
                   },
                 },
               ]
