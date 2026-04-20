@@ -16,7 +16,7 @@ on:
         description: "Whether a release PR was created"
         value: ${{ jobs.release-please.outputs.release_created }}
       body:
-        description: "Created PR body"
+        description: "Created PR body with changelog"
         value: ${{ jobs.release-please.outputs.body }}
       tag_name:
         description: "Created tag name"
@@ -24,6 +24,9 @@ on:
       html_url:
         description: "Created PR URL"
         value: ${{ jobs.release-please.outputs.html_url }}
+      pr_json:
+        description: "The full JSON string of the Release PR"
+        value: ${{ jobs.release-please.outputs.pr_json }}
 
 jobs:
   release-please:
@@ -33,6 +36,7 @@ jobs:
       body: ${{ steps.release.outputs.body }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       html_url: ${{ steps.release.outputs.html_url }}
+      pr_json: ${{ steps.release.outputs.pr || '{}' }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
