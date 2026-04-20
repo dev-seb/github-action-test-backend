@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.181.12](https://github.com/dev-seb/github-action-test-backend/compare/1.181.11...1.181.12) (2026-04-20)
+
+
+### Bug Fixes
+
+* hotfix test ([c5b796a](https://github.com/dev-seb/github-action-test-backend/commit/c5b796a28aa7c3fb7031f4a13da4bc3244b24ad5))
+
 ## [1.181.11](https://github.com/dev-seb/github-action-test-backend/compare/1.181.10...1.181.11) (2026-04-20)
 
 
