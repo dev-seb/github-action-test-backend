@@ -94,17 +94,12 @@ jobs:
           CLEAN=$(echo "$RAW_BODY" | \
             sed -E '/^## \[.*\]/d' | \
             sed -E 's/^###+ (.*)/*\1*/g' | \
-            sed -E 's/^\* /• /g' | \
+            sed -E 's/^\* /•  /g' | \
             sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
 
-          # 2. Use JQ to escape the string for JSON (handles quotes and newlines)
-          # We use -Rs to read the whole input as one string and escape it
-          # The 'cut' removes the surrounding double quotes added by jq
-          ESCAPED=$(echo "$CLEAN" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)
-
-          # 3. Output using Heredoc for safety
+          # 2. Use a Multiline Output (No escaping needed here!)
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$ESCAPED" >> $GITHUB_OUTPUT
+          echo "$CLEAN" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Notify Slack
