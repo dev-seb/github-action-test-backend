@@ -47,8 +47,8 @@ jobs:
         uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
-          PR_URL: ${{ fromJson(steps.release.outputs.pr).html_url }}
-          VERSION: ${{ fromJson(steps.release.outputs.paths_released)[0] }}
+          PR_URL: ${{ needs.call-release-workflow.outputs.url}}
+          VERSION: ${{ needs.call-release-workflow.outputs.tag }}
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -103,8 +103,8 @@ jobs:
         uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
-          PR_URL: ${{ needs.call-release-workflow.outputs.html_url }}
-          VERSION: ${{ needs.call-release-workflow.outputs.tag_name }}
+          PR_URL: ${{ needs.call-release-workflow.outputs.url }}
+          VERSION: ${{ needs.call-release-workflow.outputs.tag }}
           CHANGELOG: ${{ steps.slack_format.outputs.changelog }}
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
