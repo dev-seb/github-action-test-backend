@@ -46,23 +46,26 @@ jobs:
         id: extract
         shell: bash
         env:
-          # Pass outputs as env vars to avoid shell syntax errors
           RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
           PR_JSON: ${{ steps.release.outputs.pr }}
           REL_TAG: ${{ steps.release.outputs.tag_name }}
           REL_URL: ${{ steps.release.outputs.html_url }}
+          REPO: ${{ github.repository }}
         run: |
           if [[ "$RELEASE_CREATED" == "true" ]]; then
             echo "url=$REL_URL" >> $GITHUB_OUTPUT
             echo "tag=$REL_TAG" >> $GITHUB_OUTPUT
           elif [[ -n "$PR_JSON" && "$PR_JSON" != "{}" ]]; then
-            # Use jq to safely parse the env var
-            PR_URL=$(echo "$PR_JSON" | jq -r '.html_url // ""')
-            PR_TITLE=$(echo "$PR_JSON" | jq -r '.title // ""')
+            # Extract the PR Number and Title
+            PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
+            PR_TITLE=$(echo "$PR_JSON" | jq -r '.title')
+            
+            # Construct the URL manually since html_url is missing from the output
+            CONSTRUCTED_URL="https://github.com/$REPO/pull/$PR_NUMBER"
             
             # Extract version from title (e.g., "1.181.3")
             PROPOSED_TAG=$(echo "$PR_TITLE" | sed 's/.*release //')
             
-            echo "url=$PR_URL" >> $GITHUB_OUTPUT
+            echo "url=$CONSTRUCTED_URL" >> $GITHUB_OUTPUT
             echo "tag=$PROPOSED_TAG" >> $GITHUB_OUTPUT
           fi
