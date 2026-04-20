@@ -83,6 +83,8 @@ jobs:
         env:
           RAW_BODY: ${{ needs.call-release-workflow.outputs.release_body }}
         run: |
+          echo "$RAW_BODY"
+
           # 1. Start with the raw content
           CLEAN_BODY="$RAW_BODY"
 
@@ -128,7 +130,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
+                    "text": "Release and tag created!\n:package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
                   },
                 },
               ]
