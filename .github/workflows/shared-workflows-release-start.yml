@@ -29,7 +29,7 @@ jobs:
           gh pr create \
             --base main \
             --head ${{ inputs.source-branch }} \
-            --title "chore: release ${{ inputs.source-branch }} to main" \
+            --title "chore(release): merge ${{ inputs.source-branch }} into main" \
             --body "Created by Github action"
         env:
           GITHUB_TOKEN: ${{ secrets.token }}
