@@ -81,36 +81,30 @@ jobs:
         id: slack_format
         shell: bash
         env:
+          # Get the raw body (prioritizing release, then PR)
           RAW_BODY: ${{ needs.call-release-workflow.outputs.body }}
         run: |
           echo "$RAW_BODY"
 
-          # 1. Start with the raw content
-          CLEAN_BODY="$RAW_BODY"
+          # 1. Apply formatting using a simple pipe chain
+          # - Remove the version header line
+          # - Convert ### to * (Bold)
+          # - Convert * bullets to • (Slack Bullets)
+          # - Remove commit links
+          CLEAN=$(echo "$RAW_BODY" | \
+            sed -E '/^## \[.*\]/d' | \
+            sed -E 's/^###+ (.*)/*\1*/g' | \
+            sed -E 's/^\* /• /g' | \
+            sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
 
-          # 2. DELETE the version header line (## [1.x.x](link) (date))
-          # The '/pattern/d' command in sed deletes the entire matching line
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E '/^## \[.*\]/d')
+          # 2. Use JQ to escape the string for JSON (handles quotes and newlines)
+          # We use -Rs to read the whole input as one string and escape it
+          # The 'cut' removes the surrounding double quotes added by jq
+          ESCAPED=$(echo "$CLEAN" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)
 
-          # 3. Convert leading "*" or "-" bullets to Slack's bullet character "•"
-          # This ensures Slack treats it as a visual list
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/^[[:space:]]*[\*\-] /• /g')
-
-          # 4. Convert GFM Bold (**text**) to Slack Bold (*text*)
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/\*\*([^*]+)\*\//*\1*/g')
-
-          # 5. Remove commit links: " ([hash](url))" 
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
-
-          # 6. Escape double quotes for JSON compatibility
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed 's/"/\\"/g')
-
-          # 7. Remove any leading/trailing empty lines left over from the header removal
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed '/./,$!d')
-
-          # 8. Output using a Heredoc
+          # 3. Output using Heredoc for safety
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CLEAN_BODY" >> $GITHUB_OUTPUT
+          echo "$ESCAPED" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Notify Slack
