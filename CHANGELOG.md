@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.180.15](https://github.com/dev-seb/github-action-test-backend/compare/1.180.14...1.180.15) (2026-04-20)
+
+
+### Bug Fixes
+
+* slack notif ([2f8f698](https://github.com/dev-seb/github-action-test-backend/commit/2f8f698cb5f62d052ec9028585c9a077fa738899))
+* test ([4e3c720](https://github.com/dev-seb/github-action-test-backend/commit/4e3c7207eec5a3550da526b2a3132d5da1e5916e))
+* test ([c65d555](https://github.com/dev-seb/github-action-test-backend/commit/c65d55527361f79fd59a79d4e69ac32fdafeaf7f))
+* test ([0505f60](https://github.com/dev-seb/github-action-test-backend/commit/0505f603f81a1a0a4a9a304ff7181720b385f4fd))
+
 ## [1.180.14](https://github.com/dev-seb/github-action-test-backend/compare/1.180.13...1.180.14) (2026-04-16)
 
 
