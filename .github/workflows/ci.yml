@@ -16,5 +16,5 @@ jobs:
       - name: Simulate build/test
         run: |
           echo "Starting fake CI..."
-          sleep 10   # wait 10 seconds
+          sleep 1   # wait 1 second
           echo "Fake CI passed!"
