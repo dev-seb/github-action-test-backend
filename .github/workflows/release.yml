@@ -94,7 +94,7 @@ jobs:
           CLEAN=$(echo "$RAW_BODY" | \
             sed -E '/^## \[.*\]/d' | \
             sed -E 's/^###+ (.*)/*\1*/g' | \
-            sed -E 's/^\* /•  /g' | \
+            sed -E 's/^\* /\n•  /g' | \
             sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
 
           # 2. Use a Multiline Output (No escaping needed here!)
@@ -119,7 +119,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release and tag created!\n:package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
+                    "text": "Release and tag created!\n\n:package: Backend <${{ env.PR_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
                   },
                 },
               ]
