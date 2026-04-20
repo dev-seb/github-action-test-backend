@@ -19,9 +19,17 @@ jobs:
   create-release-pr:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+
       - name: Create Pull Request
         run: |
-          gh pr create --base main --head ${{ inputs.source-branch }} --title "chore: release ${{ inputs.source-branch }} to main" --body "Created by Github action"
+          gh pr create \
+            --base main \
+            --head ${{ inputs.source-branch }} \
+            --title "chore: release ${{ inputs.source-branch }} to main" \
+            --body "Created by Github action"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.token }}
