@@ -81,29 +81,32 @@ jobs:
         id: slack_format
         shell: bash
         env:
-          # Pick the body from the release OR the PR
-          RAW_BODY: ${{ needs.call-release-workflow.outputs.body || '' }}
+          RAW_BODY: ${{ needs.call-release-workflow.outputs.release_body }}
         run: |
           # 1. Start with the raw content
           CLEAN_BODY="$RAW_BODY"
 
-          # 2. Convert Headers (###) to Bold
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/^###+ (.*)/*\1*/g')
+          # 2. DELETE the version header line (## [1.x.x](link) (date))
+          # The '/pattern/d' command in sed deletes the entire matching line
+          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E '/^## \[.*\]/d')
 
-          # 3. Convert GFM Bold (**text**) to Slack Bold (*text*)
+          # 3. Convert leading "*" or "-" bullets to Slack's bullet character "•"
+          # This ensures Slack treats it as a visual list
+          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/^[[:space:]]*[\*\-] /• /g')
+
+          # 4. Convert GFM Bold (**text**) to Slack Bold (*text*)
           CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/\*\*([^*]+)\*\//*\1*/g')
-
-          # 4. Convert leading "*" bullets to "-"
-          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/^\* / - /g')
 
           # 5. Remove commit links: " ([hash](url))" 
           CLEAN_BODY=$(echo "$CLEAN_BODY" | sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
 
-          # 6. Escape double quotes for the final JSON payload
-          # We use python or sed to escape " into \"
+          # 6. Escape double quotes for JSON compatibility
           CLEAN_BODY=$(echo "$CLEAN_BODY" | sed 's/"/\\"/g')
 
-          # 7. Output using a Heredoc (handles newlines correctly)
+          # 7. Remove any leading/trailing empty lines left over from the header removal
+          CLEAN_BODY=$(echo "$CLEAN_BODY" | sed '/./,$!d')
+
+          # 8. Output using a Heredoc
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CLEAN_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT

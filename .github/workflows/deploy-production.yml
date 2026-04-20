@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set IMAGE_TAG env variable
         run: echo "IMAGE_TAG=$(git describe --tags)" >> $GITHUB_ENV
@@ -50,7 +50,7 @@ jobs:
 
     steps:
       - name: Checkout infra repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ env.INFRA_REPO }}
           token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
