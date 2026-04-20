@@ -81,7 +81,7 @@ jobs:
         id: slack_format
         shell: bash
         env:
-          RAW_BODY: ${{ needs.call-release-workflow.outputs.release_body }}
+          RAW_BODY: ${{ needs.call-release-workflow.outputs.body }}
         run: |
           echo "$RAW_BODY"
 
