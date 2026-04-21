@@ -6,24 +6,14 @@ on:
       token:
         description: "Token"
         required: true
+      slack-webhook-url:
+        description: "Slack Webhook URL"
+        required: false
     inputs:
       target-branch:
         description: "Target branch"
         required: true
         type: string
-    outputs:
-      release_created:
-        description: "Whether a release PR was created"
-        value: ${{ jobs.release-please.outputs.release_created }}
-      body:
-        description: "Created PR body with changelog"
-        value: ${{ jobs.release-please.outputs.body }}
-      tag:
-        description: "Created tag name"
-        value: ${{ jobs.release-please.outputs.tag }}
-      url:
-        description: "Created PR URL"
-        value: ${{ jobs.release-please.outputs.url }}
 
 jobs:
   release-please:
@@ -33,6 +23,7 @@ jobs:
       body: ${{ steps.release.outputs.body }}
       tag: ${{ steps.extract.outputs.tag }}
       url: ${{ steps.extract.outputs.url }}
+      has_slack_webhook_url: ${{ secrets.slack-webhook-url != '' }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -69,3 +60,105 @@ jobs:
             echo "url=$CONSTRUCTED_URL" >> $GITHUB_OUTPUT
             echo "tag=$PROPOSED_TAG" >> $GITHUB_OUTPUT
           fi
+
+  call-merge-back-workflow:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    #uses: ./.github/workflows/merge-back.yml@main
+    uses: ./.github/workflows/shared-workflows-merge-back.yml
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      source-branch: main
+      target-branch: develop
+    secrets:
+      token: ${{ secrets.token }}
+      slack-webhook-url: ${{ secrets.slack-webhook-url }}
+
+  slack-notification-pr:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: needs.release-please.outputs.release_created != 'true' && needs.release-please.outputs.has_slack_webhook_url == 'true'
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v3
+        continue-on-error: true
+        env:
+          PR_URL: ${{ needs.release-please.outputs.url}}
+          VERSION: ${{ needs.release-please.outputs.tag }}
+        with:
+          webhook: ${{ secrets.slack-webhook-url }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "NodeJS API ${{ env.VERSION }} (release)"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): nodejs API ${{ env.VERSION }}>"
+                  },
+                },
+              ]
+            }
+
+  slack-notification-release:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true' && needs.release-please.outputs.has_slack_webhook_url == 'true'
+    steps:
+      - name: Format Release Body for Slack
+        id: slack_format
+        shell: bash
+        env:
+          # Get the raw body (prioritizing release, then PR)
+          RAW_BODY: ${{ needs.release-please.outputs.body }}
+        run: |
+          echo "$RAW_BODY"
+
+          # 1. Apply formatting using a simple pipe chain
+          # - Remove the version header line
+          # - Convert ### to * (Bold)
+          # - Convert * bullets to • (Slack Bullets)
+          # - Remove commit links
+          CLEAN=$(echo "$RAW_BODY" | \
+            sed -E '/^## \[.*\]/d' | \
+            sed -E 's/^###+ (.*)/*\1*/g' | \
+            sed -E 's/^\* /\n•  /g' | \
+            sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
+
+          # 2. Use a Multiline Output (No escaping needed here!)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CLEAN" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v3
+        continue-on-error: true
+        env:
+          RELEASE_URL: ${{ needs.release-please.outputs.url }}
+          VERSION: ${{ needs.release-please.outputs.tag }}
+          CHANGELOG: ${{ steps.slack_format.outputs.changelog }}
+        with:
+          webhook: ${{ secrets.slack-webhook-url }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Release and tag created!\n\n:package: Backend <${{ env.RELEASE_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
+                  },
+                },
+              ]
+            }

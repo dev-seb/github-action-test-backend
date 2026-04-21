@@ -6,6 +6,9 @@ on:
       token:
         description: "Token"
         required: true
+      slack-webhook-url:
+        description: "Slack Webhook URL"
+        required: false
     inputs:
       source-branch:
         description: "Source branch to merge back from"
@@ -22,6 +25,10 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    outputs:
+      pr_title: ${{ steps.new-pr.outputs.new_pr_title }}
+      pr_url: ${{ steps.new-pr.outputs.new_pr_url }}
+      has_slack_webhook_url: ${{ secrets.slack-webhook-url != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -59,22 +66,52 @@ jobs:
         id: new-pr
         if: ${{ steps.compare.outputs.ahead_by != '0' && steps.existing-pr.outputs.pr_number == '' }}
         run: |
+          new_pr_title="chore(release): merge ${{ inputs.source-branch }} back into ${{ inputs.target-branch }}"
           new_pr_url=$(gh pr create \
             --repo "${{ github.repository }}" \
             --base "${{ inputs.target-branch }}" \
             --head "${{ inputs.source-branch }}" \
-            --title "chore: merge ${{ inputs.source-branch }} back into ${{ inputs.target-branch }}" \
-            --body "Automated merge-back PR created after #${{ github.event.pull_request.number }} was merged into ${{ inputs.source-branch }}.")
+            --title "$new_pr_title" \
+            --body "Automated merge-back PR created after #${{ github.event.pull_request.number }} was merged into ${{ inputs.source-branch }}."
 
-          echo "new_pr_number=$(echo $new_pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
+          echo "pr_title=$new_pr_title" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$new_pr_url" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$(echo $new_pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.token }}
 
       - name: Enable auto-merge
         # This only runs if a new PR was created in the previous step
-        if: ${{ steps.new-pr.outputs.new_pr_number != '' }}
+        if: ${{ steps.new-pr.outputs.pr_number != '' }}
         continue-on-error: true
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.token }}
+
+  slack-notification-pr:
+    runs-on: ubuntu-latest
+    needs: create-merge-back-pr
+    if: needs.create-merge-back-pr.outputs.pr_url != '' && needs.create-merge-back-pr.outputs.has_slack_webhook_url == 'true'
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v3
+        continue-on-error: true
+        env:
+          PR_TITLE: ${{ needs.create-merge-back-pr.outputs.pr_title }}
+          PR_URL: ${{ needs.create-merge-back-pr.outputs.pr_url }}
+        with:
+          webhook: ${{ secrets.slack-webhook-url }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Merge-back PR is ready:\n<${{ env.PR_URL }}|${{ env.PR_TITLE }}>"
+                  },
+                },
+              ]
+            }
