@@ -111,7 +111,7 @@ jobs:
 
   deploy-production-syroco:
     runs-on: ubuntu-latest
-    if: ${{ github.event.release.target_commitish == 'main' && github.event.release.prerelease == false }}
+    if: ${{ github.event.release.prerelease == false }}
     name: Deploy Webapp on production Syroco
     steps:
       - name: Simulate deployment
