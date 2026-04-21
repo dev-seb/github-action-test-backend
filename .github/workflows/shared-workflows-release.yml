@@ -32,6 +32,7 @@ jobs:
           target-branch: ${{ inputs.target-branch }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          pull-request-header: "chore(release)"
 
       - name: Extract Release Metadata
         id: extract
@@ -97,14 +98,14 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "NodeJS API ${{ env.VERSION }} (release)"
+                    "text": "NodeJS API ${{ env.VERSION }}"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): nodejs API ${{ env.VERSION }}>"
+                    "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): NodeJS API ${{ env.VERSION }}>"
                   },
                 },
               ]

@@ -83,17 +83,17 @@ jobs:
 
           new_pr_url=$(gh pr create \
             --title "chore(deploy): nodejs API $VERSION" \
-            --body "Created by Github action" \
+            --body "Created by GitHub action" \
             --base develop \
             --head $BRANCH_NAME)
 
-          echo "new_pr_url=$new_pr_url" >> $GITHUB_OUTPUT
+          echo "pr_url=$new_pr_url" >> $GITHUB_OUTPUT
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@v3
         continue-on-error: true
         env:
-          PR_URL: ${{ steps.new-pr.outputs.new_pr_url }}
+          PR_URL: ${{ steps.new-pr.outputs.pr_url }}
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
