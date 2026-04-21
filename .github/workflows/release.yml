@@ -1,7 +1,8 @@
 name: Release
 run-name: >-
   ${{ 
-    contains(github.event.head_commit.message, 'chore(release): ') 
+    startsWith(github.event.head_commit.message, 'chore(release): ') 
+    && contains(github.event.head_commit.message, '.')
     && 'Create tag and release' 
     || 'Create changelog and version bump PR' 
   }}
