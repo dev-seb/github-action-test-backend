@@ -54,8 +54,8 @@ jobs:
             # Construct the URL manually since html_url is missing from the output
             CONSTRUCTED_URL="https://github.com/$REPO/pull/$PR_NUMBER"
             
-            # Extract version from title (e.g., "1.181.3")
-            PROPOSED_TAG=$(echo "$PR_TITLE" | sed 's/.*release //')
+            # Extract version from title
+            PROPOSED_TAG=$(echo "$PR_TITLE" | sed 's/.*): //')
             
             echo "url=$CONSTRUCTED_URL" >> $GITHUB_OUTPUT
             echo "tag=$PROPOSED_TAG" >> $GITHUB_OUTPUT
@@ -104,7 +104,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): NodeJS API ${{ env.VERSION }}>"
+                    "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): ${{ env.VERSION }}>"
                   },
                 },
               ]
