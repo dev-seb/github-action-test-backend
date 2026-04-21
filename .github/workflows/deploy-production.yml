@@ -8,17 +8,6 @@ permissions:
   contents: read
 
 jobs:
-  debug-target:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug job
-        run: |
-          echo "github.event.release.target_commitish: '${{ github.event.release.target_commitish }}'"
-          echo "github.event.release.name: '${{ github.event.release.name }}'"
-          echo "github.event.release.tag_name: '${{ github.event.release.tag_name }}'"
-          echo "github.event.release.prerelease: '${{ github.event.release.prerelease }}'"
-          echo "github.event.release.draft: '${{ github.event.release.draft }}'"
-
   build-docker-image:
     name: Build and publish Docker image
     if: github.event.release.prerelease == false && github.event.release.draft == false
