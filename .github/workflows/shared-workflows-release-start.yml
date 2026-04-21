@@ -30,6 +30,6 @@ jobs:
             --base main \
             --head ${{ inputs.source-branch }} \
             --title "chore(release): merge ${{ inputs.source-branch }} into main" \
-            --body "Created by Github action"
+            --body "Created by GitHub action"
         env:
           GITHUB_TOKEN: ${{ secrets.token }}

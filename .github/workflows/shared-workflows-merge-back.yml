@@ -72,7 +72,7 @@ jobs:
             --base "${{ inputs.target-branch }}" \
             --head "${{ inputs.source-branch }}" \
             --title "$new_pr_title" \
-            --body "Automated merge-back PR created after #${{ github.event.pull_request.number }} was merged into ${{ inputs.source-branch }}."
+            --body "Created by GitHub action")
 
           echo "pr_title=$new_pr_title" >> "$GITHUB_OUTPUT"
           echo "pr_url=$new_pr_url" >> "$GITHUB_OUTPUT"
