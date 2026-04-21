@@ -98,3 +98,37 @@ jobs:
                 }
               ]
             }
+
+  deploy-production-syroco:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.release.target_commitish == 'main' && github.event.release.prerelease == false }}
+    name: Deploy Webapp on production Syroco
+    steps:
+      - name: Simulate deployment
+        run: |
+          echo "Starting fake deployment..."
+          sleep 20   # wait 20 seconds
+          echo "Fake deployment completed!"
+
+  slack-notification:
+    runs-on: ubuntu-latest
+    needs: deploy-production-syroco
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v3
+        continue-on-error: true
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":rocket: *NodeJS API ${{ github.ref_name }} successfully deployed to production*"
+                  },
+                }
+              ]
+            }
