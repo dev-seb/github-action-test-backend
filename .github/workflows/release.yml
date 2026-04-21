@@ -21,6 +21,7 @@ jobs:
     #uses: syrocolab/workflows/.github/workflows/release.yml@main
     uses: ./.github/workflows/shared-workflows-release.yml
     with:
+      app-name: "NodeJS API"
       target-branch: ${{ github.ref_name }}
     secrets:
       token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}

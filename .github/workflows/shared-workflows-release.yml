@@ -10,6 +10,10 @@ on:
         description: "Slack Webhook URL"
         required: false
     inputs:
+      app-name:
+        description: "Application name"
+        required: true
+        type: string
       target-branch:
         description: "Target branch"
         required: true
@@ -97,7 +101,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "NodeJS API ${{ env.VERSION }}"
+                    "text": "${{ inputs.app-name }} ${{ env.VERSION }}"
                   }
                 },
                 {
@@ -157,7 +161,14 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release and tag created!\n\n:package: Backend <${{ env.RELEASE_URL }}|${{ env.VERSION }}>\n${{ env.CHANGELOG}}"
+                    "text": "Release and tag created!\n\n:package: ${{ inputs.app-name }} <${{ env.RELEASE_URL }}|${{ env.VERSION }}>"
+                  },
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${{ env.CHANGELOG }}"
                   },
                 },
               ]
