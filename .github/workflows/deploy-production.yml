@@ -8,6 +8,16 @@ permissions:
   contents: read
 
 jobs:
+  debug-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug Output
+        run: |
+          echo "GitHub Event: $GITHUB_EVENT_NAME"
+          echo "Release Target Commitish: ${{ github.event.release.target_commitish }}"
+          echo "Release Prerelease: ${{ github.event.release.prerelease }}"
+          echo "Release Draft: ${{ github.event.release.draft }}"
+
   build-docker-image:
     name: Build and publish Docker image
     if: github.event.release.prerelease == false && github.event.release.draft == false
