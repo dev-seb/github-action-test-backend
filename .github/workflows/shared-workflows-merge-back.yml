@@ -26,8 +26,8 @@ jobs:
       contents: read
       pull-requests: write
     outputs:
-      pr_title: ${{ steps.new-pr.outputs.new_pr_title }}
-      pr_url: ${{ steps.new-pr.outputs.new_pr_url }}
+      pr_title: ${{ steps.new-pr.outputs.pr_title }}
+      pr_url: ${{ steps.new-pr.outputs.pr_url }}
       has_slack_webhook_url: ${{ secrets.slack-webhook-url != '' }}
     steps:
       - name: Checkout code
@@ -66,17 +66,17 @@ jobs:
         id: new-pr
         if: ${{ steps.compare.outputs.ahead_by != '0' && steps.existing-pr.outputs.pr_number == '' }}
         run: |
-          new_pr_title="chore(release): merge ${{ inputs.source-branch }} back into ${{ inputs.target-branch }}"
-          new_pr_url=$(gh pr create \
+          pr_title="chore(release): merge ${{ inputs.source-branch }} back into ${{ inputs.target-branch }}"
+          pr_url=$(gh pr create \
             --repo "${{ github.repository }}" \
             --base "${{ inputs.target-branch }}" \
             --head "${{ inputs.source-branch }}" \
-            --title "$new_pr_title" \
+            --title "$pr_title" \
             --body "Created by GitHub action")
 
-          echo "pr_title=$new_pr_title" >> "$GITHUB_OUTPUT"
-          echo "pr_url=$new_pr_url" >> "$GITHUB_OUTPUT"
-          echo "pr_number=$(echo $new_pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
+          echo "pr_title=$pr_title" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$(echo $pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.token }}
 
