@@ -20,6 +20,15 @@ jobs:
           client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
 
+      - name: Debug Token Presence
+        run: |
+          if [ -z "${{ steps.app-token.outputs.token }}" ]; then
+            echo "❌ ERROR: The token is completely empty!"
+            exit 1
+          else
+            echo "✅ Success: The token is populated (GitHub will mask it below)."
+          fi
+
       - name: Test the token with GitHub CLI
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -32,6 +41,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: generate-token
     steps:
+      - name: Debug Token Presence
+        run: |
+          if [ -z "${{ needs.generate-token.outputs.token }}" ]; then
+            echo "❌ ERROR: The token is completely empty!"
+            exit 1
+          else
+            echo "✅ Success: The token is populated (GitHub will mask it below)."
+          fi
+
       - name: Test the token with GitHub CLI
         env:
           GH_TOKEN: ${{ needs.generate-token.outputs.token }}
