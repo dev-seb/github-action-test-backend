@@ -19,3 +19,11 @@ jobs:
         with:
           client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+
+      - name: Test the token with GitHub CLI
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # The token is automatically masked by GitHub Actions (displays as ***)
+          echo "Checking GitHub App authentication status..."
+          gh api user
