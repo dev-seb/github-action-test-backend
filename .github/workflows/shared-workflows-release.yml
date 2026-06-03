@@ -2,13 +2,6 @@ name: Shared workflows - Release
 
 on:
   workflow_call:
-    secrets:
-      token:
-        description: "Token"
-        required: true
-      slack-webhook-url:
-        description: "Slack Webhook URL"
-        required: false
     inputs:
       app-name:
         description: "Application name"
@@ -20,19 +13,31 @@ on:
         type: string
 
 jobs:
+  auth:
+    uses: ./.github/workflows/get-github-token.yml
+    secrets: inherit
+
   release-please:
+    needs: auth
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       body: ${{ steps.release.outputs.body }}
       tag: ${{ steps.extract.outputs.tag }}
       url: ${{ steps.extract.outputs.url }}
-      has_slack_webhook_url: ${{ secrets.slack-webhook-url != '' }}
+      has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.app-token.outputs.token }}
           target-branch: ${{ inputs.target-branch }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
@@ -76,14 +81,11 @@ jobs:
     with:
       source-branch: main
       target-branch: develop
-    secrets:
-      token: ${{ secrets.token }}
-      slack-webhook-url: ${{ secrets.slack-webhook-url }}
 
   slack-notification-pr:
     runs-on: ubuntu-latest
     needs: release-please
-    if: needs.release-please.outputs.release_created != 'true' && needs.release-please.outputs.has_slack_webhook_url == 'true'
+    if: needs.release-please.outputs.release_created != 'true' && needs.release-please.outputs.url != '' && needs.release-please.outputs.has_slack_webhook_url == 'true'
     steps:
       - name: Notify Slack
         uses: slackapi/slack-github-action@v3
@@ -92,7 +94,7 @@ jobs:
           PR_URL: ${{ needs.release-please.outputs.url}}
           VERSION: ${{ needs.release-please.outputs.tag }}
         with:
-          webhook: ${{ secrets.slack-webhook-url }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
@@ -110,14 +112,14 @@ jobs:
                     "type": "mrkdwn",
                     "text": "Release PR is ready:\n<${{ env.PR_URL }}|chore(release): ${{ env.VERSION }}>"
                   },
-                },
+                }
               ]
             }
 
   slack-notification-release:
     runs-on: ubuntu-latest
     needs: release-please
-    if: needs.release-please.outputs.release_created == 'true' && needs.release-please.outputs.has_slack_webhook_url == 'true'
+    if: needs.release-please.outputs.release_created == 'true' && needs.release-please.outputs.url != '' && needs.release-please.outputs.has_slack_webhook_url == 'true'
     steps:
       - name: Format Release Body for Slack
         id: slack_format
@@ -134,10 +136,18 @@ jobs:
           # - Convert * bullets to • (Slack Bullets)
           # - Remove commit links
           CLEAN=$(echo "$RAW_BODY" | \
+            # Remove version header
             sed -E '/^## \[.*\]/d' | \
-            sed -E 's/^###+ (.*)/*\1*/g' | \
+            # Convert ### headers to plain text (no bold)
+            sed -E 's/^###+ (.*)/\1/g' | \
+            # Remove bold markers around scope (**scope** -> scope)
+            sed -E 's/\*\*([^*]+)\*\*/\1/g' | \
+            # Convert bullets
             sed -E 's/^\* /\n•  /g' | \
-            sed -E 's/ \(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
+            # Remove issue links ([#1234](...))
+            sed -E 's/ *\(\[#([0-9]+)\]\(https?:\/\/[^)]+\)\)//g' | \
+            # Remove commit links ([abc123](...))
+            sed -E 's/ *\(\[[0-9a-f]+\]\(https?:\/\/[^)]+\)\)//g')
 
           # 2. Use a Multiline Output (No escaping needed here!)
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
@@ -152,7 +162,7 @@ jobs:
           VERSION: ${{ needs.release-please.outputs.tag }}
           CHANGELOG: ${{ steps.slack_format.outputs.changelog }}
         with:
-          webhook: ${{ secrets.slack-webhook-url }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
@@ -170,6 +180,6 @@ jobs:
                     "type": "mrkdwn",
                     "text": "${{ env.CHANGELOG }}"
                   },
-                },
+                }
               ]
             }

@@ -20,9 +20,7 @@ jobs:
   call-release-workflow:
     #uses: syrocolab/workflows/.github/workflows/release.yml@main
     uses: ./.github/workflows/shared-workflows-release.yml
+    secrets: inherit
     with:
       app-name: "NodeJS API"
       target-branch: ${{ github.ref_name }}
-    secrets:
-      token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
-      slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
