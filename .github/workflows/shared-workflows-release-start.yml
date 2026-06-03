@@ -16,6 +16,17 @@ jobs:
     uses: ./.github/workflows/get-github-token.yml
     secrets: inherit
 
+  debug:
+    needs: auth
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show output length
+        run: |
+          echo "Token length: ${#TOKEN}"
+        env:
+          TOKEN: ${{ needs.auth.outputs.token }}
+
   create-release-pr:
     runs-on: ubuntu-latest
     steps:
