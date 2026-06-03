@@ -8,6 +8,7 @@ jobs:
   call-release-start-workflow:
     #uses: syrocolab/workflows/.github/workflows/release-start.yml@main
     uses: ./.github/workflows/shared-workflows-release-start.yml
+    secrets: inherit
     permissions:
       contents: write
     with:

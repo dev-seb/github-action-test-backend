@@ -2,10 +2,6 @@ name: Shared workflows - Merge back
 
 on:
   workflow_call:
-    secrets:
-      slack-webhook-url:
-        description: "Slack Webhook URL"
-        required: false
     inputs:
       source-branch:
         description: "Source branch to merge back from"
@@ -30,7 +26,7 @@ jobs:
     outputs:
       pr_title: ${{ steps.new-pr.outputs.pr_title }}
       pr_url: ${{ steps.new-pr.outputs.pr_url }}
-      has_slack_webhook_url: ${{ secrets.slack-webhook-url != '' }}
+      has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -103,7 +99,7 @@ jobs:
           PR_TITLE: ${{ needs.create-merge-back-pr.outputs.pr_title }}
           PR_URL: ${{ needs.create-merge-back-pr.outputs.pr_url }}
         with:
-          webhook: ${{ secrets.slack-webhook-url }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {

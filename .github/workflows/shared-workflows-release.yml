@@ -2,10 +2,6 @@ name: Shared workflows - Release
 
 on:
   workflow_call:
-    secrets:
-      slack-webhook-url:
-        description: "Slack Webhook URL"
-        required: false
     inputs:
       app-name:
         description: "Application name"
@@ -29,7 +25,7 @@ jobs:
       body: ${{ steps.release.outputs.body }}
       tag: ${{ steps.extract.outputs.tag }}
       url: ${{ steps.extract.outputs.url }}
-      has_slack_webhook_url: ${{ secrets.slack-webhook-url != '' }}
+      has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -78,8 +74,6 @@ jobs:
     with:
       source-branch: main
       target-branch: develop
-    secrets:
-      slack-webhook-url: ${{ secrets.slack-webhook-url }}
 
   slack-notification-pr:
     runs-on: ubuntu-latest
@@ -93,7 +87,7 @@ jobs:
           PR_URL: ${{ needs.release-please.outputs.url}}
           VERSION: ${{ needs.release-please.outputs.tag }}
         with:
-          webhook: ${{ secrets.slack-webhook-url }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
@@ -161,7 +155,7 @@ jobs:
           VERSION: ${{ needs.release-please.outputs.tag }}
           CHANGELOG: ${{ steps.slack_format.outputs.changelog }}
         with:
-          webhook: ${{ secrets.slack-webhook-url }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
