@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.182.0](https://github.com/dev-seb/github-action-test-backend/compare/1.181.24...1.182.0) (2026-06-03)
+
+
+### Features
+
+* use github app ([#210](https://github.com/dev-seb/github-action-test-backend/issues/210)) ([cf36e76](https://github.com/dev-seb/github-action-test-backend/commit/cf36e761a3358f561758be30484b9448bd118ae1))
+
+
+### Bug Fixes
+
+* change gh api command ([3aa665d](https://github.com/dev-seb/github-action-test-backend/commit/3aa665dcfbf6b59d1e034f2bd2133411ab1f8859))
+* debug auth ([f8724a9](https://github.com/dev-seb/github-action-test-backend/commit/f8724a9c6fddb337a1c2de4f40dbf36ae7d59f6a))
+* debug token ([f1f5427](https://github.com/dev-seb/github-action-test-backend/commit/f1f5427715514ded923cde5589298a6d98206c1d))
+* inherit secrets ([0d82c54](https://github.com/dev-seb/github-action-test-backend/commit/0d82c546e95b33a36c0a3377ff87b5663e1d32a0))
+* remove reusable app token workflow ([ba05ac8](https://github.com/dev-seb/github-action-test-backend/commit/ba05ac8af078d580bd5f179b53fdc5eac0b0140d))
+* removed script reference ([aeb5455](https://github.com/dev-seb/github-action-test-backend/commit/aeb54554180a0fc5e65ace1f5adddaddbdd195ff))
+* test token ([4f00b0e](https://github.com/dev-seb/github-action-test-backend/commit/4f00b0e4da9a9b3540e92716b8dc0fe24935ca7d))
+* test token in step and job ([bf0fc28](https://github.com/dev-seb/github-action-test-backend/commit/bf0fc289d38ac94e40c54cc87ed8a836c51efe3c))
+
 ## [1.181.24](https://github.com/dev-seb/github-action-test-backend/compare/1.181.23...1.181.24) (2026-04-21)
 
 
