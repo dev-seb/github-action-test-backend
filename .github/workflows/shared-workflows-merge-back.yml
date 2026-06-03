@@ -13,12 +13,7 @@ on:
         type: string
 
 jobs:
-  auth:
-    uses: ./.github/workflows/get-github-token.yml
-    secrets: inherit
-
   create-merge-back-pr:
-    needs: auth
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,10 +23,16 @@ jobs:
       pr_url: ${{ steps.new-pr.outputs.pr_url }}
       has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          token: ${{ needs.auth.outputs.token }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Check for changes to merge back
         id: compare
@@ -42,7 +43,7 @@ jobs:
 
           echo "ahead_by=$ahead_by" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Check for existing merge-back pull request
         id: existing-pr
@@ -58,7 +59,7 @@ jobs:
 
           echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Create merge-back pull request
         id: new-pr
@@ -76,7 +77,7 @@ jobs:
           echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
           echo "pr_number=$(echo "$pr_url" | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Enable auto-merge
         # This only runs if a new PR was created in the previous step
@@ -85,7 +86,7 @@ jobs:
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
         env:
-          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
   slack-notification-pr:
     runs-on: ubuntu-latest
