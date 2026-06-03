@@ -48,11 +48,18 @@ jobs:
       INFRA_REPO: dev-seb/github-action-test-infra
 
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+
       - name: Checkout infra repo
         uses: actions/checkout@v5
         with:
           repository: ${{ env.INFRA_REPO }}
-          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           path: infra
 
       - name: Update nodejs-api version
@@ -65,7 +72,7 @@ jobs:
       - name: Commit changes and open PR
         id: new-pr
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           BRANCH_NAME="feature/deploy-nodejs-api-${VERSION}"
 
@@ -87,6 +94,16 @@ jobs:
             --head $BRANCH_NAME)
 
           echo "pr_url=$new_pr_url" >> $GITHUB_OUTPUT
+          echo "pr_number=$(echo "$new_pr_url" | jq -r '.number')" >> $GITHUB_OUTPUT
+
+      - name: Enable auto-merge (Squash and Merge)
+        # This only runs if a new PR was created in the previous step
+        if: ${{ steps.new-pr.outputs.pr_number != '' }}
+        continue-on-error: true
+        run: |
+          gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --squash
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@v3

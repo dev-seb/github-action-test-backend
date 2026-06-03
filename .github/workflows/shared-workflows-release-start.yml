@@ -28,11 +28,23 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Create Pull Request
+        id: create-pr
         run: |
-          gh pr create \
+          pr_url=$(gh pr create \
             --base main \
             --head "${{ inputs.source-branch }}" \
             --title "chore(release): merge ${{ inputs.source-branch }} into main" \
-            --body "Created by GitHub action"
+            --body "Created by GitHub action")
+
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$(echo "$pr_url" | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Enable auto-merge (Merge commit)
+        if: ${{ steps.create-pr.outputs.pr_number != '' }}
+        continue-on-error: true
+        run: |
+          gh pr merge ${{ steps.create-pr.outputs.pr_number }} --auto --merge
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
