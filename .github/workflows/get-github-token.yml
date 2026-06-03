@@ -26,11 +26,11 @@ jobs:
         run: |
           # The token is automatically masked by GitHub Actions (displays as ***)
           echo "Checking GitHub App authentication status in step..."
-          gh api user
+          gh api repos/$GITHUB_REPOSITORY
 
   use-token:
     runs-on: ubuntu-latest
-    needs: generate-token # Ensures Job 1 finishes first
+    needs: generate-token
     steps:
       - name: Test the token with GitHub CLI
         env:
@@ -38,4 +38,4 @@ jobs:
         run: |
           # The token is automatically masked by GitHub Actions (displays as ***)
           echo "Checking GitHub App authentication status in job..."
-          gh api user
+          gh api repos/$GITHUB_REPOSITORY
