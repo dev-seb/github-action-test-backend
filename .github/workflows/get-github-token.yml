@@ -25,5 +25,17 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           # The token is automatically masked by GitHub Actions (displays as ***)
-          echo "Checking GitHub App authentication status..."
+          echo "Checking GitHub App authentication status in step..."
+          gh api user
+
+  use-token:
+    runs-on: ubuntu-latest
+    needs: generate-token # Ensures Job 1 finishes first
+    steps:
+      - name: Test the token with GitHub CLI
+        env:
+          GH_TOKEN: ${{ needs.generate-token.outputs.token }}
+        run: |
+          # The token is automatically masked by GitHub Actions (displays as ***)
+          echo "Checking GitHub App authentication status in job..."
           gh api user
