@@ -12,6 +12,4 @@ jobs:
       contents: write
     with:
       source-branch: develop
-    secrets:
-      token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 

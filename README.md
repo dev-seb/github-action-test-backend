@@ -10,65 +10,178 @@ Notes:
 - The release process is manually triggered by a user.
 - A manual approval + merge commit is required for the release PR after it is created and after the release automerge workflow.
 
-### Overview Diagram
+### Sequence Diagram
 
+
+Frontend application:
 ```mermaid
-flowchart TD
-	 U([User]) --> A[Start a new release from develop branch<br/>Release start]
-	 A --> B[Prepare release changelog and version bump<br/>Release]
-	 B --> C[Automerge release changelog and version bump PR<br/>Release automerge]
-	 C --> D[Create release PR<br/>Release]
-	 D --> E{User approves and performs<br/>merge commit of release PR}
-	 E --> F[Create merge back PR<br/>Merge back]
+---
+title: Frontend release sequence
+config:
+  mirrorActors: false
+---
+sequenceDiagram
+    actor User
+    participant Live as efficientship-live
+    participant GA_Live as GitHub Actions (live)
+    participant AWS
+
+    %% Start release
+    User->>GA_Live: Trigger release workflow (workflow_dispatch)
+    GA_Live->>Live: Create PR (develop → main)
+
+    %% First PR
+    User->>Live: Review & approve PR
+    User->>Live: Merge PR
+
+    %% Versioning PR
+    Live->>GA_Live: Trigger workflow (on merge)
+    GA_Live->>Live: Create PR (changelog + version bump)
+
+    User->>Live: Review & approve PR
+    User->>Live: Merge PR
+
+    %% Release
+    Live->>GA_Live: Trigger workflow (on merge)
+    GA_Live->>Live: Create GitHub Release + Tag
+
+    %% Build & deploy
+    GA_Live->>AWS: Deploy to S3
+
+    %% Merge back PR
+    GA_Live->>Live: Create merge back PR (main → develop)
+
+    User->>Live: Review & approve PR
+    User->>Live: Merge PR
+```
+
+Backend application:
+```mermaid
+---
+title: Backend release sequence
+config:
+  mirrorActors: false
+---
+sequenceDiagram
+    actor User
+    participant Backend as efficientship-backend
+    participant GA_Backend as GitHub Actions (backend)
+    participant Infra as efficientship-infra
+    participant GA_Infra as GitHub Actions (infra)
+    participant AWS
+
+    %% Start release
+    User->>GA_Backend: Trigger release workflow (workflow_dispatch)
+    GA_Backend->>Backend: Create PR (develop → main)
+
+    %% First PR
+    User->>Backend: Review & approve PR
+    User->>Backend: Merge PR
+
+    %% Versioning PR
+    Backend->>GA_Backend: Trigger workflow (on merge)
+    GA_Backend->>Backend: Create PR (changelog + version bump)
+
+    User->>Backend: Review & approve PR
+    User->>Backend: Merge PR
+
+    %% Release
+    Backend->>GA_Backend: Trigger workflow (on merge)
+    GA_Backend->>Backend: Create GitHub Release + Tag
+
+    %% Build & deploy backend
+    GA_Backend->>AWS: Build Docker image
+    GA_Backend->>AWS: Push to ECR
+
+    %% Infra update
+    GA_Backend->>Infra: Create PR (version bump)
+
+    User->>Infra: Review & approve PR
+    User->>Infra: Merge PR
+
+    %% Deploy infra
+    Infra->>GA_Infra: Trigger workflow (on merge)
+    GA_Infra->>AWS: Deploy to ECS
+
+    %% Merge back PR
+    GA_Backend->>Backend: Create merge back PR (main → develop)
+
+    User->>Backend: Review & approve PR
+    User->>Backend: Merge PR
 ```
 
 ### Sequence Diagram
 
-```mermaid
-sequenceDiagram
-	 autonumber
-	 participant U as User
-	 participant PR as Pull requests
-	 participant RS as Start a new release from develop branch (Release start)
-	 participant R as Release workflow
-	 participant RA as Release automerge workflow
-	 participant MB as Merge back workflow
+Release:
 
-	 U->>RS: Manually trigger workflow from Actions tab
-	 RS->>R: Start a new release from develop branch (Release start)
-	 R->>R: Prepare release changelog and version bump (Release)
-	 R->>RA: Trigger automerge release changelog and version bump PR
-	 RA->>RA: Automerge release changelog and version bump PR (Release automerge)
-	 RA->>R: Automerge sequence completed
-	 R->>PR: Create release PR (Release)
-	 U->>PR: Approve and merge release PR (manual merge commit)
-	 PR->>MB: Trigger merge back process
-	 MB->>MB: Create merge back PR (Merge back)
+```mermaid
+---
+Release process
+---
+gitGraph
+commit id: "init"
+
+branch "develop"
+checkout "develop"
+commit id: "init develop"
+
+commit id: "new PR branch"
+
+branch "feature/new-feature"
+checkout "feature/new-feature"
+commit id: "feat: commit 1"
+commit id: "feat: commit 2"
+
+checkout "develop"
+merge "feature/new-feature" id: "squash"
+
+checkout "main"
+merge "develop" id: "merge"
+
+branch "release-please--main"
+checkout "release-please--main"
+commit id: "chore(release): 1.0.0"
+
+checkout "main"
+merge "release-please--main" type: HIGHLIGHT tag: "1.0.0"
+
+checkout "develop"
+merge "main" id: "merge back"
 ```
 
-### Branch Flow Diagram
+Hotfix:
 
 ```mermaid
+---
+Release process
+---
 gitGraph
-	 commit id: "main baseline"
-	 branch develop
-	 checkout develop
-	 commit id: "start release"
-	 branch release
-	 checkout release
-	 commit id: "release prep"
-	 branch release-changelog-and-bump
-	 checkout release-changelog-and-bump
-	 commit id: "changelog + version bump"
-	 checkout release
-	 merge release-changelog-and-bump
-	 commit id: "release PR created"
-	 checkout main
-	 merge release
-	 commit id: "release merged to main"
-	 checkout develop
-	 merge main
-	 commit id: "merge back PR"
+commit id: "init"
+
+branch "develop"
+checkout "develop"
+commit id: "init develop"
+
+checkout "main"
+commit id: "new PR branch"
+
+branch "fix/hotfix"
+checkout "fix/hotfix"
+commit id: "fix: commit 1"
+commit id: "fix: commit 2"
+
+checkout "main"
+merge "fix/hotfix" id: "squash"
+
+branch "release-please--main"
+checkout "release-please--main"
+commit id: "chore(release): 1.0.1"
+
+checkout "main"
+merge "release-please--main" type: HIGHLIGHT tag: "1.0.1"
+
+checkout "develop"
+merge "main" id: "merge back"
 ```
 
 ## Step-by-Step Release Process
@@ -76,6 +189,10 @@ gitGraph
 1. **Start a new release from develop branch** (`Release start`)
    - Entry point of the release process, manually triggered by a user from the GitHub Actions tab.
    - Kicks off the main release workflow on top of `develop`.
+
+5. **Manual approval and merge commit of the release PR** (User action)
+   - This manual step occurs after release PR creation and after the `Release automerge` workflow.
+   - A user reviews, approves, and performs the merge commit on the release PR.
 
 2. **Prepare release changelog and version bump** (`Release`)
    - Automatically computes the next version and prepares changelog/version updates.

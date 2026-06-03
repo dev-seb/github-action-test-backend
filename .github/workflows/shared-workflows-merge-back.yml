@@ -3,9 +3,6 @@ name: Shared workflows - Merge back
 on:
   workflow_call:
     secrets:
-      token:
-        description: "Token"
-        required: true
       slack-webhook-url:
         description: "Slack Webhook URL"
         required: false
@@ -20,7 +17,12 @@ on:
         type: string
 
 jobs:
+  auth:
+    uses: ./.github/workflows/get-github-token.yml
+    secrets: inherit
+
   create-merge-back-pr:
+    needs: auth
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -33,7 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.token }}
+          token: ${{ needs.auth.outputs.token }}
 
       - name: Check for changes to merge back
         id: compare
@@ -44,7 +46,7 @@ jobs:
 
           echo "ahead_by=$ahead_by" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
 
       - name: Check for existing merge-back pull request
         id: existing-pr
@@ -60,7 +62,7 @@ jobs:
 
           echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
 
       - name: Create merge-back pull request
         id: new-pr
@@ -76,9 +78,9 @@ jobs:
 
           echo "pr_title=$pr_title" >> "$GITHUB_OUTPUT"
           echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
-          echo "pr_number=$(echo $pr_url | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$(echo "$pr_url" | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
 
       - name: Enable auto-merge
         # This only runs if a new PR was created in the previous step
@@ -87,7 +89,7 @@ jobs:
         run: |
           gh pr merge ${{ steps.new-pr.outputs.pr_number }} --auto --merge
         env:
-          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ needs.auth.outputs.token }}
 
   slack-notification-pr:
     runs-on: ubuntu-latest
@@ -112,6 +114,6 @@ jobs:
                     "type": "mrkdwn",
                     "text": "Merge-back PR is ready:\n<${{ env.PR_URL }}|${{ env.PR_TITLE }}>"
                   },
-                },
+                }
               ]
             }
