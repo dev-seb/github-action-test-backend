@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.182.1](https://github.com/dev-seb/github-action-test-backend/compare/1.182.0...1.182.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* enable auto merge ([a3b1542](https://github.com/dev-seb/github-action-test-backend/commit/a3b154222b8204b32219737fbfd76641a2abad31))
+
 ## [1.182.0](https://github.com/dev-seb/github-action-test-backend/compare/1.181.24...1.182.0) (2026-06-03)
 
 
