@@ -21,6 +21,7 @@ jobs:
     outputs:
       pr_title: ${{ steps.new-pr.outputs.pr_title }}
       pr_url: ${{ steps.new-pr.outputs.pr_url }}
+      pr_number: ${{ steps.new-pr.outputs.pr_number }}
       has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
       - name: Generate GitHub App token
@@ -29,6 +30,7 @@ jobs:
         with:
           client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v5
         with:
@@ -79,8 +81,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
-      - name: Enable auto-merge
-        # This only runs if a new PR was created in the previous step
+      - name: Enable auto-merge (Merge commit)
         if: ${{ steps.new-pr.outputs.pr_number != '' }}
         continue-on-error: true
         run: |

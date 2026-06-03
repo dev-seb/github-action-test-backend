@@ -19,6 +19,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       body: ${{ steps.release.outputs.body }}
       tag: ${{ steps.extract.outputs.tag }}
+      pr_number: ${{ steps.extract.outputs.pr_number }}
       url: ${{ steps.extract.outputs.url }}
       has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
@@ -61,15 +62,25 @@ jobs:
             # Extract version from title
             PROPOSED_TAG=$(echo "$PR_TITLE" | sed 's/.*): //')
             
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
             echo "url=$CONSTRUCTED_URL" >> $GITHUB_OUTPUT
             echo "tag=$PROPOSED_TAG" >> $GITHUB_OUTPUT
           fi
+
+      - name: Enable auto-merge (Squash and Merge)
+        if: ${{ steps.extract.outputs.release_created != 'true' && steps.extract.outputs.pr_number != '' }}
+        continue-on-error: true
+        run: |
+          gh pr merge ${{ steps.extract.outputs.pr_number }} --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
   call-merge-back-workflow:
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
     #uses: ./.github/workflows/merge-back.yml@main
     uses: ./.github/workflows/shared-workflows-merge-back.yml
+    secrets: inherit
     permissions:
       contents: read
       pull-requests: write
