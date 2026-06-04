@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.182.2](https://github.com/dev-seb/github-action-test-backend/compare/1.182.1...1.182.2) (2026-06-04)
+
+
+### Bug Fixes
+
+* approval with different user ([18d0c5d](https://github.com/dev-seb/github-action-test-backend/commit/18d0c5da70b95c3db369e99e687c37c0d0a62b07))
+* test auto approval ([8709377](https://github.com/dev-seb/github-action-test-backend/commit/87093771f50fa72f3b2edb75a611d721efb2215e))
+
 ## [1.182.1](https://github.com/dev-seb/github-action-test-backend/compare/1.182.0...1.182.1) (2026-06-03)
 
 
