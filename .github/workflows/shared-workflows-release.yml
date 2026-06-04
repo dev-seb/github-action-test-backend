@@ -67,11 +67,17 @@ jobs:
             echo "tag=$PROPOSED_TAG" >> $GITHUB_OUTPUT
           fi
 
+      - name: Checkout
+        if: ${{ steps.extract.outputs.release_created != 'true' && steps.extract.outputs.pr_number != '' }}
+        uses: actions/checkout@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
       - name: Enable auto-merge (Squash and Merge)
         if: ${{ steps.extract.outputs.release_created != 'true' && steps.extract.outputs.pr_number != '' }}
         continue-on-error: true
         run: |
-          gh pr merge ${{ steps.extract.outputs.pr_number }} --auto --merge
+          gh pr merge ${{ steps.extract.outputs.pr_number }} --auto --squash
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
