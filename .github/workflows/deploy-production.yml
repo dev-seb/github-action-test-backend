@@ -96,8 +96,15 @@ jobs:
           echo "pr_url=$new_pr_url" >> $GITHUB_OUTPUT
           echo "pr_number=$(echo "$new_pr_url" | jq -r '.number')" >> $GITHUB_OUTPUT
 
+      - name: "Enable auto-approval"
+        if: ${{ steps.new-pr.outputs.pr_number != '' }}
+        continue-on-error: true
+        run: |
+          gh pr review ${{ steps.new-pr.outputs.pr_number }} --approve
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
       - name: Enable auto-merge (Squash and Merge)
-        # This only runs if a new PR was created in the previous step
         if: ${{ steps.new-pr.outputs.pr_number != '' }}
         continue-on-error: true
         run: |
