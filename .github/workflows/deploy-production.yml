@@ -45,7 +45,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.build-docker-image.outputs.docker-image-tag }}
-      INFRA_REPO: dev-seb/github-action-test-infra
+      INFRA_OWNER: dev-seb
+      INFRA_REPO: github-action-test-infra
 
     steps:
       - name: Generate GitHub App token
@@ -54,11 +55,13 @@ jobs:
         with:
           client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+          owner: ${{ env.INFRA_OWNER }}
+          repositories: ${{ env.INFRA_REPO }}
 
       - name: Checkout infra repo
         uses: actions/checkout@v5
         with:
-          repository: ${{ env.INFRA_REPO }}
+          repository: ${{ env.INFRA_OWNER }}/${{ env.INFRA_REPO }}
           ref: develop
           token: ${{ steps.app-token.outputs.token }}
           path: infra
