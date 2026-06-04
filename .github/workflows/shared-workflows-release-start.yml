@@ -47,7 +47,7 @@ jobs:
         run: |
           gh pr review ${{ steps.create-pr.outputs.pr_number }} --approve
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
 
       - name: Enable auto-merge (Merge commit)
         if: ${{ steps.create-pr.outputs.pr_number != '' }}
