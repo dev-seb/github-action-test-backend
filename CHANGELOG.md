@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.182.4](https://github.com/dev-seb/github-action-test-backend/compare/1.182.3...1.182.4) (2026-06-04)
+
+
+### Bug Fixes
+
+* set owner and repo ([0dd393b](https://github.com/dev-seb/github-action-test-backend/commit/0dd393b223426d7fd4a054f22c3663098d346427))
+
 ## [1.182.3](https://github.com/dev-seb/github-action-test-backend/compare/1.182.2...1.182.3) (2026-06-04)
 
 
