@@ -1,0 +1,26 @@
+name: Release
+run-name: >-
+  ${{ 
+    contains(github.event.head_commit.message, 'chore(release): ') 
+    && contains(github.event.head_commit.message, '.')
+    && 'Create tag and release' 
+    || 'Create changelog and version bump PR' 
+  }}
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  call-release-workflow:
+    #uses: syrocolab/workflows/.github/workflows/release.yml@main
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
+    with:
+      app-name: "NodeJS API"
+      target-branch: ${{ github.ref_name }}
