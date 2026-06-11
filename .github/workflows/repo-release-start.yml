@@ -1,0 +1,16 @@
+name: Release start
+run-name: Start a new release from develop branch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-release-start-workflow:
+    #uses: syrocolab/workflows/.github/workflows/release-start.yml@main
+    uses: ./.github/workflows/release-start.yml
+    secrets: inherit
+    permissions:
+      contents: write
+    with:
+      source-branch: develop
+
