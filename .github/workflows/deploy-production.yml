@@ -97,8 +97,8 @@ jobs:
             --base develop \
             --head $BRANCH_NAME)
 
-          echo "pr_url=$new_pr_url" >> $GITHUB_OUTPUT
-          echo "pr_number=$(echo "$new_pr_url" | jq -r '.number')" >> $GITHUB_OUTPUT
+          echo "pr_url=$new_pr_url" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$(echo "$new_pr_url" | grep -oE '[0-9]+$')" >> "$GITHUB_OUTPUT"
 
       - name: "Enable auto-approval"
         if: ${{ steps.new-pr.outputs.pr_number != '' }}
