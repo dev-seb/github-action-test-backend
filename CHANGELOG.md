@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.183.1](https://github.com/dev-seb/github-action-test-backend/compare/1.183.0...1.183.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* commit ([18c4a33](https://github.com/dev-seb/github-action-test-backend/commit/18c4a3312c135302347ff7bab31f0ed0b808acbf))
+* commit ([0e3cd6f](https://github.com/dev-seb/github-action-test-backend/commit/0e3cd6fbc7fe2b56d99d4f7d2cc08c8a68d538df))
+* extract pr number ([#234](https://github.com/dev-seb/github-action-test-backend/issues/234)) ([aa5a1ae](https://github.com/dev-seb/github-action-test-backend/commit/aa5a1aeeb771bcac2f6249e26643341ae0e8965b))
+* rename ([cbf38aa](https://github.com/dev-seb/github-action-test-backend/commit/cbf38aa26c19c6a25ed6f101dd219ef590678d04))
+* retry ([#235](https://github.com/dev-seb/github-action-test-backend/issues/235)) ([a10cbd0](https://github.com/dev-seb/github-action-test-backend/commit/a10cbd096fdb94765c6024f64a5872efdf05a245))
+* use action ([844e272](https://github.com/dev-seb/github-action-test-backend/commit/844e2728c184b53c2724f8b5e469475cfa4b7666))
+* use develop ([#239](https://github.com/dev-seb/github-action-test-backend/issues/239)) ([e3fb391](https://github.com/dev-seb/github-action-test-backend/commit/e3fb391c80b655d6e24a969ff7a4f98adf577705))
+* use full path ([#237](https://github.com/dev-seb/github-action-test-backend/issues/237)) ([aacb73c](https://github.com/dev-seb/github-action-test-backend/commit/aacb73c65938d2d5c0526c8890b72d420036de9b))
+
 ## [1.183.0](https://github.com/dev-seb/github-action-test-backend/compare/1.182.4...1.183.0) (2026-06-11)
 
 
