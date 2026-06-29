@@ -1,0 +1,78 @@
+name: Release Please with Retry
+description: Runs release-please-action with automatic retry on transient failures (3 attempts, exponential backoff)
+
+inputs:
+  token:
+    description: "GitHub token with contents:write and pull-requests:write"
+    required: true
+  target-branch:
+    description: "Target branch for release-please"
+    required: true
+  config-file:
+    description: "Path to release-please-config.json"
+    default: "release-please-config.json"
+  manifest-file:
+    description: "Path to .release-please-manifest.json"
+    default: ".release-please-manifest.json"
+
+outputs:
+  release_created:
+    description: "Whether a release was created"
+    value: ${{ steps.attempt-1.outputs.release_created || steps.attempt-2.outputs.release_created || steps.attempt-3.outputs.release_created }}
+  body:
+    description: "Release body (changelog)"
+    value: ${{ steps.attempt-1.outputs.body || steps.attempt-2.outputs.body || steps.attempt-3.outputs.body }}
+  pr:
+    description: "Release PR JSON"
+    value: ${{ steps.attempt-1.outputs.pr || steps.attempt-2.outputs.pr || steps.attempt-3.outputs.pr }}
+  tag_name:
+    description: "Release tag name"
+    value: ${{ steps.attempt-1.outputs.tag_name || steps.attempt-2.outputs.tag_name || steps.attempt-3.outputs.tag_name }}
+  html_url:
+    description: "Release or PR URL"
+    value: ${{ steps.attempt-1.outputs.html_url || steps.attempt-2.outputs.html_url || steps.attempt-3.outputs.html_url }}
+
+runs:
+  using: composite
+  steps:
+    - uses: googleapis/release-please-action@v4
+      id: attempt-1
+      continue-on-error: true
+      with:
+        token: ${{ inputs.token }}
+        target-branch: ${{ inputs.target-branch }}
+        config-file: ${{ inputs.config-file }}
+        manifest-file: ${{ inputs.manifest-file }}
+
+    - name: Wait before retry (attempt 2/3)
+      if: steps.attempt-1.outcome == 'failure'
+      shell: bash
+      run: |
+        echo "::warning::release-please failed (attempt 1/3), retrying in 15s..."
+        sleep 15
+
+    - uses: googleapis/release-please-action@v4
+      id: attempt-2
+      if: steps.attempt-1.outcome == 'failure'
+      continue-on-error: true
+      with:
+        token: ${{ inputs.token }}
+        target-branch: ${{ inputs.target-branch }}
+        config-file: ${{ inputs.config-file }}
+        manifest-file: ${{ inputs.manifest-file }}
+
+    - name: Wait before retry (attempt 3/3)
+      if: steps.attempt-1.outcome == 'failure' && steps.attempt-2.outcome == 'failure'
+      shell: bash
+      run: |
+        echo "::warning::release-please failed (attempt 2/3), retrying in 30s..."
+        sleep 30
+
+    - uses: googleapis/release-please-action@v4
+      id: attempt-3
+      if: steps.attempt-1.outcome == 'failure' && steps.attempt-2.outcome == 'failure'
+      with:
+        token: ${{ inputs.token }}
+        target-branch: ${{ inputs.target-branch }}
+        config-file: ${{ inputs.config-file }}
+        manifest-file: ${{ inputs.manifest-file }}
