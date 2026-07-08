@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.184.0](https://github.com/dev-seb/github-action-test-backend/compare/1.183.2...1.184.0) (2026-07-08)
+
+
+### Features
+
+* update readme ([90efd2c](https://github.com/dev-seb/github-action-test-backend/commit/90efd2c6d0e1e96831b8cdc714f65668a2b440b9))
+
+
+### Bug Fixes
+
+* run create release pr in release approval environment ([#250](https://github.com/dev-seb/github-action-test-backend/issues/250)) ([c2fc64f](https://github.com/dev-seb/github-action-test-backend/commit/c2fc64feb02d6888080d22d56863ef1dbf5adb08))
+
 ## [1.183.2](https://github.com/dev-seb/github-action-test-backend/compare/1.183.1...1.183.2) (2026-06-29)
 
 
