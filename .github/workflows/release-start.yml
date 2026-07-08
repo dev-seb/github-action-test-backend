@@ -14,6 +14,7 @@ permissions:
 jobs:
   create-release-pr:
     runs-on: ubuntu-latest
+    environment: release-approval
     steps:
       - name: Generate GitHub App token
         id: app-token
