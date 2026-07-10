@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.187.0](https://github.com/dev-seb/github-action-test-backend/compare/1.186.0...1.187.0) (2026-07-10)
+
+
+### Features
+
+* test linear status change from pr description ([#265](https://github.com/dev-seb/github-action-test-backend/issues/265)) ([2d4ae88](https://github.com/dev-seb/github-action-test-backend/commit/2d4ae8878147249d5e403f2e229f2608232a53d1))
+
 ## [1.186.0](https://github.com/dev-seb/github-action-test-backend/compare/1.185.0...1.186.0) (2026-07-10)
 
 
