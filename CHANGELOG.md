@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.185.0](https://github.com/dev-seb/github-action-test-backend/compare/1.184.0...1.185.0) (2026-07-10)
+
+
+### Features
+
+* linear ticket sync ([#255](https://github.com/dev-seb/github-action-test-backend/issues/255)) ([b7514bd](https://github.com/dev-seb/github-action-test-backend/commit/b7514bdcace29ba664175eef0bedf7983d050c9f))
+* test linear status change from branch ([#256](https://github.com/dev-seb/github-action-test-backend/issues/256)) ([993978d](https://github.com/dev-seb/github-action-test-backend/commit/993978d3cacbb710eec534673c54b49c3084bec5))
+
 ## [1.184.0](https://github.com/dev-seb/github-action-test-backend/compare/1.183.2...1.184.0) (2026-07-08)
 
 
