@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.186.0](https://github.com/dev-seb/github-action-test-backend/compare/1.185.0...1.186.0) (2026-07-10)
+
+
+### Features
+
+* test linear status change from branch name ([#261](https://github.com/dev-seb/github-action-test-backend/issues/261)) ([50d5568](https://github.com/dev-seb/github-action-test-backend/commit/50d556855dcfa419ee2e5bf35e340f5c045d39db))
+
+
+### Bug Fixes
+
+* use local workflow ([#260](https://github.com/dev-seb/github-action-test-backend/issues/260)) ([0bb3658](https://github.com/dev-seb/github-action-test-backend/commit/0bb3658b9b7a41cb79632f1ac2a284f384f46834))
+
 ## [1.185.0](https://github.com/dev-seb/github-action-test-backend/compare/1.184.0...1.185.0) (2026-07-10)
 
 
