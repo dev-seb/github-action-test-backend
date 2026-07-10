@@ -31,7 +31,9 @@ jobs:
           client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
 
-      - uses: dev-seb/github-action-test-backend/.github/actions/release-please-retry@develop
+      - name: "Release Please with retry"
+        #uses: syrocolab/workflows/.github/actions/release-please-retry@main
+        uses: dev-seb/github-action-test-backend/.github/actions/release-please-retry@develop
         id: release
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -112,7 +114,9 @@ jobs:
       pull-requests: read
     steps:
       - name: Move released Linear issues to Done
-        uses: syrocolab/workflows/.github/actions/linear-release-sync@main
+        #uses: syrocolab/workflows/.github/actions/linear-release-sync@main
+        uses: dev-seb/github-action-test-backend/.github/actions/linear-release-sync@develop
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ needs.release-please.outputs.tag }}
