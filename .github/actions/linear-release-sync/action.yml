@@ -1,0 +1,149 @@
+name: Linear Release Sync
+description: >-
+  Move every Linear issue included in a published release to the configured
+  Done state and add a "released in <tag>" comment. Idempotent and safe to
+  re-run. Pure bash — uses gh, curl and jq (all preinstalled on runners).
+
+inputs:
+  github-token:
+    description: "GitHub token with contents:read and pull-requests:read (the default GITHUB_TOKEN is enough)."
+    required: true
+  release-tag:
+    description: "The published release tag, e.g. v1.8.2."
+    required: true
+  linear-api-key:
+    description: "Linear API key (from the LINEAR_API_KEY secret)."
+    required: true
+  linear-done-state-id:
+    description: "Target Linear workflow-state id (from the LINEAR_ENGINEERING_DONE_STATE_ID variable)."
+    required: true
+  linear-team-key:
+    description: >-
+      Linear team key to match, e.g. "SYR". Strongly recommended: it scopes
+      matching to the team that owns the done-state, so PR references to other
+      teams' tickets are never touched. Leave empty to match any key (generic,
+      but higher false-positive risk).
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    # Full history + tags are required to compute the commit range with git.
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.github-token }}
+
+    - name: Sync Linear issues
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        REPO: ${{ github.repository }}
+        TAG: ${{ inputs.release-tag }}
+        LINEAR_API_KEY: ${{ inputs.linear-api-key }}
+        DONE_STATE: ${{ inputs.linear-done-state-id }}
+        TEAM_KEY: ${{ inputs.linear-team-key }}
+      run: |
+        set -euo pipefail
+
+        # --- Config validation (fail fast) ---------------------------------
+        : "${GH_TOKEN:?github-token is required}"
+        : "${TAG:?release-tag is required}"
+        : "${LINEAR_API_KEY:?linear-api-key is required}"
+        : "${DONE_STATE:?linear-done-state-id is required}"
+
+        # Small helper: POST a GraphQL query to Linear and fail on API errors.
+        # Usage: linear '<query>' '<variables-json>'
+        linear() {
+          local vars="${2-}"; [ -z "$vars" ] && vars='{}'
+          local resp
+          resp=$(curl -sS -X POST https://api.linear.app/graphql \
+            -H "Authorization: $LINEAR_API_KEY" \
+            -H 'Content-Type: application/json' \
+            --data "$(jq -n --arg q "$1" --argjson v "$vars" '{query:$q,variables:$v}')")
+          if echo "$resp" | jq -e '.errors' >/dev/null 2>&1; then
+            echo "Linear API error: $(echo "$resp" | jq -c '.errors')" >&2
+            return 1
+          fi
+          echo "$resp"
+        }
+
+        # --- Validate Linear auth/config before doing any work --------------
+        linear 'query { viewer { id } }' >/dev/null \
+          || { echo "::error::Linear authentication or configuration is invalid."; exit 1; }
+
+        # --- Determine the commit range for this release --------------------
+        prev=$(git tag --sort=-creatordate | grep -vxF "$TAG" | head -n1 || true)
+        range="${prev:+$prev..}$TAG"
+        echo "Previous tag: ${prev:-<none, first release>}"
+        echo "Commit range: $range"
+
+        # --- Collect PRs in the range and the Linear keys they reference ----
+        # Each PR becomes a header line "PR #<n> [<branch>] <title>" (used for
+        # display and matching) plus its body on the next line (matched only).
+        prs=$(
+          git log "$range" --pretty=%H | while read -r sha; do
+            gh api "repos/$REPO/commits/$sha/pulls" \
+              --jq '.[] | "PR #\(.number) [\(.head.ref)] \(.title)\n\(.body // "")"'
+          done
+        )
+        echo "::group::Pull requests detected"
+        echo "$prs" | grep -E '^PR #' || echo "  (none)"
+        echo "::endgroup::"
+
+        # Build the key pattern. When a team key is configured, only that team's
+        # keys are matched (e.g. SYR-123), so PR references to other Linear teams'
+        # tickets are never touched. Otherwise fall back to a generic key pattern.
+        key=$(echo "${TEAM_KEY:-}" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+        if [ -n "$key" ]; then
+          pattern="\\b${key}-[0-9]+"
+          echo "Matching Linear keys for team: $key"
+        else
+          pattern='[A-Z][A-Z0-9]+-[0-9]+'
+          echo "::warning::No linear-team-key set — matching any issue key, which may include other teams'."
+        fi
+
+        # Case-insensitive so lowercase branch names (e.g. seb/syr-1234-fix) match
+        # as well as uppercase body references (SYR-1234); normalise before dedupe.
+        keys=$(echo "$prs" | grep -oiE "$pattern" | tr '[:lower:]' '[:upper:]' | sort -u || true)
+        echo "::group::Linear issues detected"
+        echo "${keys:-<none>}"
+        echo "::endgroup::"
+        [ -z "$keys" ] && { echo "::notice::No Linear issues to update for $TAG."; exit 0; }
+
+        # --- Move each issue to Done and add an idempotent comment ----------
+        marker="🚀 Released in $TAG"
+        moved=0; commented=0; skipped=0; errored=0
+        echo "::group::Updating Linear issues"
+        for id in $keys; do
+          resp=$(linear 'query($id:String!){issue(id:$id){id comments(first:100){nodes{body}}}}' \
+                 "$(jq -n --arg id "$id" '{id:$id}')") || { echo "::warning::  $id: lookup failed"; errored=$((errored+1)); continue; }
+
+          iid=$(echo "$resp" | jq -r '.data.issue.id // empty')
+          if [ -z "$iid" ]; then
+            echo "  $id: not found in Linear, skipping"; skipped=$((skipped+1)); continue
+          fi
+
+          if ! linear 'mutation($id:String!,$s:String!){issueUpdate(id:$id,input:{stateId:$s}){success}}' \
+               "$(jq -n --arg id "$iid" --arg s "$DONE_STATE" '{id:$id,s:$s}')" >/dev/null; then
+            echo "::warning::  $id: failed to move to Done"; errored=$((errored+1)); continue
+          fi
+          moved=$((moved+1))
+
+          has=$(echo "$resp" | jq --arg m "$marker" '[.data.issue.comments.nodes[].body | select(contains($m))] | length')
+          if [ "$has" -eq 0 ]; then
+            if linear 'mutation($id:String!,$b:String!){commentCreate(input:{issueId:$id,body:$b}){success}}' \
+               "$(jq -n --arg id "$iid" --arg b "$marker" '{id:$id,b:$b}')" >/dev/null; then
+              commented=$((commented+1)); echo "  $id: moved to Done; comment added"
+            else
+              echo "::warning::  $id: moved to Done but comment failed"
+            fi
+          else
+            echo "  $id: moved to Done; comment already present"
+          fi
+        done
+        echo "::endgroup::"
+
+        echo "::notice::Linear release sync for $TAG — moved: $moved, comments: $commented, skipped: $skipped, errored: $errored"

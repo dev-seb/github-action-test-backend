@@ -22,6 +22,7 @@ jobs:
       pr_number: ${{ steps.extract.outputs.pr_number }}
       url: ${{ steps.extract.outputs.url }}
       has_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+      has_linear_config: ${{ secrets.LINEAR_API_KEY != '' && vars.LINEAR_ENGINEERING_DONE_STATE_ID != '' }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -101,6 +102,23 @@ jobs:
     with:
       source-branch: main
       target-branch: develop
+
+  linear-release-sync:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true' && needs.release-please.outputs.tag != '' && needs.release-please.outputs.has_linear_config == 'true'
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Move released Linear issues to Done
+        uses: syrocolab/workflows/.github/actions/linear-release-sync@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ needs.release-please.outputs.tag }}
+          linear-api-key: ${{ secrets.LINEAR_API_KEY }}
+          linear-done-state-id: ${{ vars.LINEAR_ENGINEERING_DONE_STATE_ID }}
+          linear-team-key: ${{ vars.LINEAR_TEAM_KEY }}
 
   slack-notification-pr:
     runs-on: ubuntu-latest
