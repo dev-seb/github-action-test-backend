@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.187.2](https://github.com/dev-seb/github-action-test-backend/compare/1.187.1...1.187.2) (2026-07-15)
+
+
+### Bug Fixes
+
+* test from branch ([#274](https://github.com/dev-seb/github-action-test-backend/issues/274)) ([45412d5](https://github.com/dev-seb/github-action-test-backend/commit/45412d53e9f8600b9eb0c43e3c1a54544cd3fe20))
+
 ## [1.187.1](https://github.com/dev-seb/github-action-test-backend/compare/1.187.0...1.187.1) (2026-07-15)
 
 
